@@ -45,7 +45,7 @@ export default function NomineeTable() {
         method: "DELETE",
       });
       setNominees(nominees.filter((nominee) => nominee.id !== nomineeId));
-      alert("Nominee deleted successfully");
+      alert("Nominee has been deleted successfully");
     } catch {
       alert("Failed to delete nominee");
     }
