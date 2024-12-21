@@ -1,6 +1,6 @@
 // app/submit/page.tsx
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { AlertTriangle, Building, FileText, BadgeAlert } from 'lucide-react';
+import { AlertTriangle, Building, BadgeAlert } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SubmitPage() {

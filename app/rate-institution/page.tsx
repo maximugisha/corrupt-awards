@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { RatingCategory } from "@/types/interfaces";
 import { useRouter } from "next/navigation";
-import { PlusCircle, X } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 
 interface NewInstitution {
   name: string;

@@ -2,7 +2,8 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ChevronRight, Building, Users, Award, BarChart3, AlertTriangle, TrendingUp, Search, X } from 'lucide-react';
+import { ChevronRight, Users, Award, AlertTriangle, Search, X } from 'lucide-react';
+import Link from "next/link";
 
 interface Rating {
   score: number;
@@ -317,14 +318,14 @@ export default function Home() {
                 Explore detailed corruption metrics and evidence for both officials and institutions.
               </p>
               <div className="flex gap-4">
-                <a href="/nominees" className="text-slate-900 font-medium flex items-center group">
+                <Link href="/nominees" className="text-slate-900 font-medium flex items-center group">
                   Officials
                   <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition" />
-                </a>
-                <a href="/institutions" className="text-slate-900 font-medium flex items-center group">
+                </Link>
+                <Link href="/institutions" className="text-slate-900 font-medium flex items-center group">
                   Institutions
                   <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition" />
-                </a>
+                </Link>
               </div>
             </CardContent>
           </Card>

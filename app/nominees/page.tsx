@@ -5,6 +5,9 @@ import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Image from 'next/image';
+import Link from "next/link";
+
 
 const NomineeList: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -98,15 +101,18 @@ const NomineeList: React.FC = () => {
                         {nominees.map((nominee) => (
                             <Card key={nominee.id} className="p-6 relative">
                                 <div className="flex flex-col items-center">
-                                    <Avatar 
-                                        className="w-24 h-24 mb-4"
-                                        src={`/api/placeholder/${nominee.id}`} 
-                                        fallback={nominee.name.charAt(0)}
-                                    />
+                                    <Avatar className="w-24 h-24 mb-4">
+                                        <Image
+                                          src={`/api/placeholder/${nominee.id}`}
+                                          alt={nominee.name}
+                                          width={96}
+                                          height={96}
+                                        />
+                                    </Avatar>
                                     <h2 className="text-xl text-cyan-700 font-semibold mb-2">
-                                        <a href={`/nominees/${nominee.id}`} className="hover:underline">
+                                        <Link href={`/nominees/${nominee.id}`} className="hover:underline">
                                             {nominee.name}
-                                        </a>
+                                        </Link>
                                     </h2>
                                     <p className="text-gray-600 mb-4">
                                         {nominee.position.name} at {nominee.institution.name}
@@ -151,12 +157,12 @@ const NomineeList: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <a
+                                <Link
                                     href={`/nominees/${nominee.id}/rate`}
                                     className="absolute top-4 right-4 bg-cyan-700 text-white py-2 px-4 rounded-md hover:bg-cyan-800 transition"
                                 >
                                     Rate
-                                </a>
+                                </Link>
                             </Card>
                         ))}
                     </div>

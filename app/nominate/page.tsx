@@ -7,7 +7,7 @@ import {
   Institution,
 } from "@/types/interfaces";
 import { useRouter } from "next/navigation";
-import { PlusCircle, X } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 
 interface Rating {
   ratingCategoryId: number;
