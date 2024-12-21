@@ -43,45 +43,45 @@ const ImpactAreasDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Impact Areas Dashboard</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Impact Areas Dashboard</h1>
       <Card className="mb-4">
-        <h2 className="text-xl font-semibold">Create Impact Area</h2>
+        <h2 className="text-xl text-black font-semibold">Create Impact Area</h2>
         <Input
           type="text"
           placeholder="Name"
           value={newImpactArea.name}
           onChange={(e) => setNewImpactArea({ ...newImpactArea, name: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
-        <Button onClick={handleCreateImpactArea} className="mt-2">Create</Button>
+        <Button onClick={handleCreateImpactArea} className="mt-2 bg-black text-white">Create</Button>
       </Card>
       <Card>
-        <h2 className="text-xl font-semibold">Impact Areas</h2>
+        <h2 className="text-xl text-black font-semibold">Impact Areas</h2>
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2">ID</th>
-              <th className="py-2">Name</th>
-              <th className="py-2">Actions</th>
+              <th className="py-2 text-black text-left">ID</th>
+              <th className="py-2 text-black text-left">Name</th>
+              <th className="py-2 text-black text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {impactAreas.map((impactArea) => (
               <tr key={impactArea.id}>
-                <td className="py-2">{impactArea.id}</td>
-                <td className="py-2">{impactArea.name}</td>
-                <td className="py-2">
-                  <Button onClick={() => handleUpdateImpactArea(impactArea.id, { name: 'Updated Name' })} variant="secondary" className="mr-2">Update</Button>
-                  <Button onClick={() => handleDeleteImpactArea(impactArea.id)} variant="secondary">Delete</Button>
+                <td className="py-2 text-black text-left">{impactArea.id}</td>
+                <td className="py-2 text-black text-left">{impactArea.name}</td>
+                <td className="py-2 text-black text-left">
+                  <Button onClick={() => handleUpdateImpactArea(impactArea.id, { name: 'Updated Name' })} variant="secondary" className="mr-2 bg-black text-white">Update</Button>
+                  <Button onClick={() => handleDeleteImpactArea(impactArea.id)} variant="secondary" className="bg-black text-white">Delete</Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="flex justify-between mt-4">
-          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-black text-white">Previous</Button>
+          <span className="text-black">Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-black text-white">Next</Button>
         </div>
       </Card>
     </div>

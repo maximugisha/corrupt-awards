@@ -19,11 +19,11 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+      <h1 className=" py-2xl text-black font-bold mb-4">Admin Dashboard</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {models.map((model) => (
           <Card key={model.name} className="p-6">
-            <h2 className="text-xl font-semibold mb-4">{model.name}</h2>
+            <h2 className=" py-xl text-blue-500 font-semibold mb-4">{model.name}</h2>
             <Link href={model.path}>
               <Button className="w-full">Manage {model.name}</Button>
             </Link>

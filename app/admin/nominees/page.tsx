@@ -64,20 +64,20 @@ const NomineesDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Nominees Dashboard</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Nominees Dashboard</h1>
       <Card className="mb-4">
-        <h2 className="text-xl font-semibold">Create Nominee</h2>
+        <h2 className="text-xl text-blue-600 font-semibold">Create Nominee</h2>
         <Input
           type="text"
           placeholder="Name"
           value={newNominee.name}
           onChange={(e) => setNewNominee({ ...newNominee, name: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
         <select
           value={newNominee.positionId}
           onChange={(e) => setNewNominee({ ...newNominee, positionId: Number(e.target.value) })}
-          className="mr-2"
+          className="mr-2 text-black"
         >
           <option value="">Select Position</option>
           {positions.map((position) => (
@@ -87,7 +87,7 @@ const NomineesDashboard: React.FC = () => {
         <select
           value={newNominee.institutionId}
           onChange={(e) => setNewNominee({ ...newNominee, institutionId: Number(e.target.value) })}
-          className="mr-2"
+          className="mr-2 text-black"
         >
           <option value="">Select Institution</option>
           {institutions.map((institution) => (
@@ -97,48 +97,48 @@ const NomineesDashboard: React.FC = () => {
         <select
           value={newNominee.districtId}
           onChange={(e) => setNewNominee({ ...newNominee, districtId: Number(e.target.value) })}
-          className="mr-2"
+          className="mr-2 text-black"
         >
           <option value="">Select District</option>
           {districts.map((district) => (
             <option key={district.id} value={district.id}>{district.name}</option>
           ))}
         </select>
-        <Button onClick={handleCreateNominee} className="mt-2">Create</Button>
+        <Button onClick={handleCreateNominee} className="mt-2 bg-blue-500 text-white">Create</Button>
       </Card>
       <Card>
-        <h2 className="text-xl font-semibold">Nominees</h2>
+        <h2 className="text-xl text-blue-600 font-semibold">Nominees</h2>
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2">ID</th>
-              <th className="py-2">Name</th>
-              <th className="py-2">Position</th>
-              <th className="py-2">Institution</th>
-              <th className="py-2">District</th>
-              <th className="py-2">Actions</th>
+              <th className="py-2 text-black text-left">ID</th>
+              <th className="py-2 text-black text-left">Name</th>
+              <th className="py-2 text-black text-left">Position</th>
+              <th className="py-2 text-black text-left">Institution</th>
+              <th className="py-2 text-black text-left">District</th>
+              <th className="py-2 text-black text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {nominees.map((nominee) => (
               <tr key={nominee.id}>
-                <td className="py-2">{nominee.id}</td>
-                <td className="py-2">{nominee.name}</td>
-                <td className="py-2">{positions.find(p => p.id === nominee.positionId)?.name}</td>
-                <td className="py-2">{institutions.find(i => i.id === nominee.institutionId)?.name}</td>
-                <td className="py-2">{districts.find(d => d.id === nominee.districtId)?.name}</td>
-                <td className="py-2">
-                  <Button onClick={() => handleUpdateNominee(nominee.id, { name: 'Updated Name' })} variant="secondary" className="mr-2">Update</Button>
-                  <Button onClick={() => handleDeleteNominee(nominee.id)} variant="secondary">Delete</Button>
+                <td className="py-2 text-black text-left">{nominee.id}</td>
+                <td className="py-2 text-black text-left">{nominee.name}</td>
+                <td className="py-2 text-black text-left">{positions.find(p => p.id === nominee.positionId)?.name}</td>
+                <td className="py-2 text-black text-left">{institutions.find(i => i.id === nominee.institutionId)?.name}</td>
+                <td className="py-2 text-black text-left">{districts.find(d => d.id === nominee.districtId)?.name}</td>
+                <td className="py-2 text-black text-left">
+                  <Button onClick={() => handleUpdateNominee(nominee.id, { name: 'Updated Name' })} variant="secondary" className="mr-2 bg-blue-500 text-white">Update</Button>
+                  <Button onClick={() => handleDeleteNominee(nominee.id)} variant="secondary" className="bg-blue-500 text-white">Delete</Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="flex justify-between mt-4">
-          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-blue-500 text-white">Previous</Button>
+          <span className="text-black">Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-blue-500 text-white">Next</Button>
         </div>
       </Card>
     </div>

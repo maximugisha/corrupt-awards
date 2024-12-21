@@ -43,45 +43,45 @@ const DepartmentsDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Departments Dashboard</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Departments Dashboard</h1>
       <Card className="mb-4">
-        <h2 className="text-xl font-semibold">Create Department</h2>
+        <h2 className="text-xl text-black font-semibold">Create Department</h2>
         <Input
           type="text"
           placeholder="Name"
           value={newDepartment.name}
           onChange={(e) => setNewDepartment({ ...newDepartment, name: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
-        <Button onClick={handleCreateDepartment} className="mt-2">Create</Button>
+        <Button onClick={handleCreateDepartment} className="mt-2 bg-black text-white">Create</Button>
       </Card>
       <Card>
-        <h2 className="text-xl font-semibold">Departments</h2>
+        <h2 className="text-xl text-black font-semibold">Departments</h2>
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2">ID</th>
-              <th className="py-2">Name</th>
-              <th className="py-2">Actions</th>
+              <th className="py-2 text-black text-left">ID</th>
+              <th className="py-2 text-black text-left">Name</th>
+              <th className="py-2 text-black text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {departments.map((department) => (
               <tr key={department.id}>
-                <td className="py-2">{department.id}</td>
-                <td className="py-2">{department.name}</td>
-                <td className="py-2">
-                  <Button onClick={() => handleUpdateDepartment(department.id, { name: 'Updated Name' })} variant="secondary" className="mr-2">Update</Button>
-                  <Button onClick={() => handleDeleteDepartment(department.id)} variant="secondary">Delete</Button>
+                <td className="py-2 text-black text-left">{department.id}</td>
+                <td className="py-2 text-black text-left">{department.name}</td>
+                <td className="py-2 text-black text-left">
+                  <Button onClick={() => handleUpdateDepartment(department.id, { name: 'Updated Name' })} variant="secondary" className="mr-2 bg-black text-white">Update</Button>
+                  <Button onClick={() => handleDeleteDepartment(department.id)} variant="secondary" className="bg-black text-white">Delete</Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="flex justify-between mt-4">
-          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-black text-white">Previous</Button>
+          <span className="text-black">Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-black text-white">Next</Button>
         </div>
       </Card>
     </div>
