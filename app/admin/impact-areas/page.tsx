@@ -9,29 +9,36 @@ import { Card } from '@/components/ui/card';
 const ImpactAreasDashboard: React.FC = () => {
   const [impactAreas, setImpactAreas] = useState<ImpactArea[]>([]);
   const [newImpactArea, setNewImpactArea] = useState({ name: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchImpactAreas();
-  }, []);
+    fetchImpactAreas(currentPage);
+  }, [currentPage]);
 
-  const fetchImpactAreas = async () => {
-    const response = await axios.get('/api/impact-areas');
-    setImpactAreas(response.data);
+  const fetchImpactAreas = async (page: number) => {
+    const response = await axios.get(`/api/impact-areas?page=${page}`);
+    setImpactAreas(response.data.data);
+    setTotalPages(response.data.pages);
   };
 
   const handleCreateImpactArea = async () => {
     await axios.post('/api/impact-areas', newImpactArea);
-    fetchImpactAreas();
+    fetchImpactAreas(currentPage);
   };
 
   const handleUpdateImpactArea = async (id: number, data: Partial<ImpactArea>) => {
     await axios.put('/api/impact-areas', { id, ...data });
-    fetchImpactAreas();
+    fetchImpactAreas(currentPage);
   };
 
   const handleDeleteImpactArea = async (id: number) => {
     await axios.delete('/api/impact-areas', { data: { impactAreaId: id } });
-    fetchImpactAreas();
+    fetchImpactAreas(currentPage);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -71,6 +78,11 @@ const ImpactAreasDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-between mt-4">
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+        </div>
       </Card>
     </div>
   );

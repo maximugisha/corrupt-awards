@@ -9,29 +9,36 @@ import { Card } from '@/components/ui/card';
 const DepartmentsDashboard: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [newDepartment, setNewDepartment] = useState({ name: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
+    fetchDepartments(currentPage);
+  }, [currentPage]);
 
-  const fetchDepartments = async () => {
-    const response = await axios.get('/api/departments');
-    setDepartments(response.data);
+  const fetchDepartments = async (page: number) => {
+    const response = await axios.get(`/api/departments?page=${page}`);
+    setDepartments(response.data.data);
+    setTotalPages(response.data.pages);
   };
 
   const handleCreateDepartment = async () => {
     await axios.post('/api/departments', newDepartment);
-    fetchDepartments();
+    fetchDepartments(currentPage);
   };
 
   const handleUpdateDepartment = async (id: number, data: Partial<Department>) => {
     await axios.put('/api/departments', { id, ...data });
-    fetchDepartments();
+    fetchDepartments(currentPage);
   };
 
   const handleDeleteDepartment = async (id: number) => {
     await axios.delete('/api/departments', { data: { departmentId: id } });
-    fetchDepartments();
+    fetchDepartments(currentPage);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -71,6 +78,11 @@ const DepartmentsDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-between mt-4">
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+        </div>
       </Card>
     </div>
   );
