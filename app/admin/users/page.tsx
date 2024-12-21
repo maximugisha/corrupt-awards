@@ -36,9 +36,9 @@ const UsersDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Users Dashboard</h1>
       <Card className="mb-4">
-        <h2 className="text-xl font-semibold">Create User</h2>
+        <h2 className="text-xl text-black font-semibold">Create User</h2>
         <Input
           type="text"
           placeholder="Name"
@@ -63,30 +63,30 @@ const UsersDashboard: React.FC = () => {
         <Button onClick={handleCreateUser} className="mt-2">Create</Button>
       </Card>
       <Card>
-        <h2 className="text-xl font-semibold">Users</h2>
+        <h2 className="text-xl text-black font-semibold">Users</h2>
         <table className="min-w-full bg-white">
-          <thead>
-          <tr>
-            <th className="py-2">ID</th>
-            <th className="py-2">Name</th>
-            <th className="py-2">Email</th>
-            <th className="py-2">Actions</th>
-          </tr>
-          </thead>
-          <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td className="py-2">{user.id}</td>
-              <td className="py-2">{user.name}</td>
-              <td className="py-2">{user.email}</td>
-              <td className="py-2">
-                <Button onClick={() => handleUpdateUser(user.id, { name: 'Updated Name' })} variant="secondary" className="mr-2">Update</Button>
-                <Button onClick={() => handleDeleteUser(user.id)} variant="secondary">Delete</Button>
-              </td>
-            </tr>
-          ))}
-          </tbody>
-        </table>
+  <thead>
+    <tr>
+      <th className="py-2 text-black text-left">ID</th>
+      <th className="py-2 text-black text-left">Name</th>
+      <th className="py-2 text-black text-left">Email</th>
+      <th className="py-2 text-black text-left">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {users.map((user) => (
+      <tr key={user.id}>
+        <td className="py-2 text-black text-left">{user.id}</td>
+        <td className="py-2 text-black text-left">{user.name}</td>
+        <td className="py-2 text-black text-left">{user.email}</td>
+        <td className="py-2 text-black text-left">
+          <Button onClick={() => handleUpdateUser(user.id, { name: 'Updated Name' })} variant="secondary" className="mr-2">Update</Button>
+          <Button onClick={() => handleDeleteUser(user.id)} variant="secondary">Delete</Button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
       </Card>
     </div>
   );

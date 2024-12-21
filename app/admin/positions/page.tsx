@@ -43,45 +43,45 @@ const PositionsDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Positions Dashboard</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Positions Dashboard</h1>
       <Card className="mb-4">
-        <h2 className="text-xl font-semibold">Create Position</h2>
+        <h2 className="text-xl text-black font-semibold">Create Position</h2>
         <Input
           type="text"
           placeholder="Name"
           value={newPosition.name}
           onChange={(e) => setNewPosition({ ...newPosition, name: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
-        <Button onClick={handleCreatePosition} className="mt-2">Create</Button>
+        <Button onClick={handleCreatePosition} className="mt-2 bg-black text-white">Create</Button>
       </Card>
       <Card>
-        <h2 className="text-xl font-semibold">Positions</h2>
+        <h2 className="text-xl text-black font-semibold">Positions</h2>
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2">ID</th>
-              <th className="py-2">Name</th>
-              <th className="py-2">Actions</th>
+              <th className="py-2 text-black text-left">ID</th>
+              <th className="py-2 text-black text-left">Name</th>
+              <th className="py-2 text-black text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {positions.map((position) => (
               <tr key={position.id}>
-                <td className="py-2">{position.id}</td>
-                <td className="py-2">{position.name}</td>
-                <td className="py-2">
-                  <Button onClick={() => handleUpdatePosition(position.id, { name: 'Updated Name' })} variant="secondary" className="mr-2">Update</Button>
-                  <Button onClick={() => handleDeletePosition(position.id)} variant="secondary">Delete</Button>
+                <td className="py-2 text-black text-left">{position.id}</td>
+                <td className="py-2 text-black text-left">{position.name}</td>
+                <td className="py-2 text-black text-left">
+                  <Button onClick={() => handleUpdatePosition(position.id, { name: 'Updated Name' })} variant="secondary" className="mr-2 bg-black text-white">Update</Button>
+                  <Button onClick={() => handleDeletePosition(position.id)} variant="secondary" className="bg-black text-white">Delete</Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="flex justify-between mt-4">
-          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-black text-white">Previous</Button>
+          <span className="text-black">Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-black text-white">Next</Button>
         </div>
       </Card>
     </div>

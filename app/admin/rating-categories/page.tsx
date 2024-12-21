@@ -43,81 +43,81 @@ const RatingCategoriesDashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Rating Categories Dashboard</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Rating Categories Dashboard</h1>
       <Card className="mb-4">
-        <h2 className="text-xl font-semibold">Create Rating Category</h2>
+        <h2 className="text-xl text-black font-semibold">Create Rating Category</h2>
         <Input
           type="text"
           placeholder="Name"
           value={newRatingCategory.name}
           onChange={(e) => setNewRatingCategory({ ...newRatingCategory, name: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
         <Input
           type="text"
           placeholder="Keyword"
           value={newRatingCategory.keyword}
           onChange={(e) => setNewRatingCategory({ ...newRatingCategory, keyword: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
         <Input
           type="text"
           placeholder="Icon"
           value={newRatingCategory.icon}
           onChange={(e) => setNewRatingCategory({ ...newRatingCategory, icon: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
         <Input
           type="text"
           placeholder="Description"
           value={newRatingCategory.description}
           onChange={(e) => setNewRatingCategory({ ...newRatingCategory, description: e.target.value })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
         <Input
           type="number"
           placeholder="Weight"
           value={newRatingCategory.weight}
           onChange={(e) => setNewRatingCategory({ ...newRatingCategory, weight: Number(e.target.value) })}
-          className="mr-2"
+          className="mr-2 text-black"
         />
-        <Button onClick={handleCreateRatingCategory} className="mt-2">Create</Button>
+        <Button onClick={handleCreateRatingCategory} className="mt-2 bg-black text-white">Create</Button>
       </Card>
       <Card>
-        <h2 className="text-xl font-semibold">Rating Categories</h2>
+        <h2 className="text-xl text-black font-semibold">Rating Categories</h2>
         <table className="min-w-full bg-white">
           <thead>
             <tr>
-              <th className="py-2">ID</th>
-              <th className="py-2">Name</th>
-              <th className="py-2">Keyword</th>
-              <th className="py-2">Icon</th>
-              <th className="py-2">Description</th>
-              <th className="py-2">Weight</th>
-              <th className="py-2">Actions</th>
+              <th className="py-2 text-black text-left">ID</th>
+              <th className="py-2 text-black text-left">Icon</th>
+              <th className="py-2 text-black text-left">Name</th>
+              <th className="py-2 text-black text-left">Keyword</th>
+              <th className="py-2 text-black text-left">Description</th>
+              <th className="py-2 text-black text-left">Weight</th>
+              <th className="py-2 text-black text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
             {ratingCategories.map((ratingCategory) => (
               <tr key={ratingCategory.id}>
-                <td className="py-2">{ratingCategory.id}</td>
-                <td className="py-2">{ratingCategory.name}</td>
-                <td className="py-2">{ratingCategory.keyword}</td>
-                <td className="py-2">{ratingCategory.icon}</td>
-                <td className="py-2">{ratingCategory.description}</td>
-                <td className="py-2">{ratingCategory.weight}</td>
-                <td className="py-2">
-                  <Button onClick={() => handleUpdateRatingCategory(ratingCategory.id, { name: 'Updated Name' })} variant="secondary" className="mr-2">Update</Button>
-                  <Button onClick={() => handleDeleteRatingCategory(ratingCategory.id)} variant="secondary">Delete</Button>
+                <td className="py-2 text-black text-left">{ratingCategory.id}</td>
+                <td className="py-2 text-black text-left">{ratingCategory.icon}</td>
+                <td className="py-2 text-black text-left">{ratingCategory.name}</td>
+                <td className="py-2 text-black text-left">{ratingCategory.keyword}</td>
+                <td className="py-2 text-black text-left">{ratingCategory.description}</td>
+                <td className="py-2 text-black text-left">{ratingCategory.weight}</td>
+                <td className="py-2 text-black text-left">
+                  <Button onClick={() => handleUpdateRatingCategory(ratingCategory.id, { name: 'Updated Name' })} variant="secondary" className="mr-2 bg-black text-white">Update</Button>
+                  <Button onClick={() => handleDeleteRatingCategory(ratingCategory.id)} variant="secondary" className="bg-black text-white">Delete</Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
         <div className="flex justify-between mt-4">
-          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-black text-white">Previous</Button>
+          <span className="text-black">Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-black text-white">Next</Button>
         </div>
       </Card>
     </div>
