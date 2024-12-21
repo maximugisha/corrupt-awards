@@ -9,29 +9,36 @@ import { Card } from '@/components/ui/card';
 const DistrictsDashboard: React.FC = () => {
   const [districts, setDistricts] = useState<District[]>([]);
   const [newDistrict, setNewDistrict] = useState({ name: '', region: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchDistricts();
-  }, []);
+    fetchDistricts(currentPage);
+  }, [currentPage]);
 
-  const fetchDistricts = async () => {
-    const response = await axios.get('/api/districts');
-    setDistricts(response.data);
+  const fetchDistricts = async (page: number) => {
+    const response = await axios.get(`/api/districts?page=${page}`);
+    setDistricts(response.data.data);
+    setTotalPages(response.data.pages);
   };
 
   const handleCreateDistrict = async () => {
     await axios.post('/api/districts', newDistrict);
-    fetchDistricts();
+    fetchDistricts(currentPage);
   };
 
   const handleUpdateDistrict = async (id: number, data: Partial<District>) => {
     await axios.put('/api/districts', { id, ...data });
-    fetchDistricts();
+    fetchDistricts(currentPage);
   };
 
   const handleDeleteDistrict = async (id: number) => {
     await axios.delete('/api/districts', { data: { districtId: id } });
-    fetchDistricts();
+    fetchDistricts(currentPage);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -80,6 +87,11 @@ const DistrictsDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-between mt-4">
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+        </div>
       </Card>
     </div>
   );

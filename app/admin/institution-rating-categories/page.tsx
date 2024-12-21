@@ -9,29 +9,36 @@ import { Card } from '@/components/ui/card';
 const InstitutionRatingCategoriesDashboard: React.FC = () => {
   const [institutionRatingCategories, setInstitutionRatingCategories] = useState<InstitutionRatingCategory[]>([]);
   const [newInstitutionRatingCategory, setNewInstitutionRatingCategory] = useState({ name: '', keyword: '', icon: '', description: '', weight: 0 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchInstitutionRatingCategories();
-  }, []);
+    fetchInstitutionRatingCategories(currentPage);
+  }, [currentPage]);
 
-  const fetchInstitutionRatingCategories = async () => {
-    const response = await axios.get('/api/institution-rating-categories');
-    setInstitutionRatingCategories(response.data);
+  const fetchInstitutionRatingCategories = async (page: number) => {
+    const response = await axios.get(`/api/institution-rating-categories?page=${page}`);
+    setInstitutionRatingCategories(response.data.data);
+    setTotalPages(response.data.pages);
   };
 
   const handleCreateInstitutionRatingCategory = async () => {
     await axios.post('/api/institution-rating-categories', newInstitutionRatingCategory);
-    fetchInstitutionRatingCategories();
+    fetchInstitutionRatingCategories(currentPage);
   };
 
   const handleUpdateInstitutionRatingCategory = async (id: number, data: Partial<InstitutionRatingCategory>) => {
     await axios.put('/api/institution-rating-categories', { id, ...data });
-    fetchInstitutionRatingCategories();
+    fetchInstitutionRatingCategories(currentPage);
   };
 
   const handleDeleteInstitutionRatingCategory = async (id: number) => {
     await axios.delete('/api/institution-rating-categories', { data: { institutionRatingCategoryId: id } });
-    fetchInstitutionRatingCategories();
+    fetchInstitutionRatingCategories(currentPage);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -107,6 +114,11 @@ const InstitutionRatingCategoriesDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-between mt-4">
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+        </div>
       </Card>
     </div>
   );

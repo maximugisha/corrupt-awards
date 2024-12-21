@@ -9,29 +9,36 @@ import { Card } from '@/components/ui/card';
 const RatingCategoriesDashboard: React.FC = () => {
   const [ratingCategories, setRatingCategories] = useState<RatingCategory[]>([]);
   const [newRatingCategory, setNewRatingCategory] = useState({ name: '', keyword: '', icon: '', description: '', weight: 0 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchRatingCategories();
-  }, []);
+    fetchRatingCategories(currentPage);
+  }, [currentPage]);
 
-  const fetchRatingCategories = async () => {
-    const response = await axios.get('/api/rating-categories');
-    setRatingCategories(response.data);
+  const fetchRatingCategories = async (page: number) => {
+    const response = await axios.get(`/api/rating-categories?page=${page}`);
+    setRatingCategories(response.data.data);
+    setTotalPages(response.data.pages);
   };
 
   const handleCreateRatingCategory = async () => {
     await axios.post('/api/rating-categories', newRatingCategory);
-    fetchRatingCategories();
+    fetchRatingCategories(currentPage);
   };
 
   const handleUpdateRatingCategory = async (id: number, data: Partial<RatingCategory>) => {
     await axios.put('/api/rating-categories', { id, ...data });
-    fetchRatingCategories();
+    fetchRatingCategories(currentPage);
   };
 
   const handleDeleteRatingCategory = async (id: number) => {
     await axios.delete('/api/rating-categories', { data: { ratingCategoryId: id } });
-    fetchRatingCategories();
+    fetchRatingCategories(currentPage);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -107,6 +114,11 @@ const RatingCategoriesDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-between mt-4">
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+        </div>
       </Card>
     </div>
   );

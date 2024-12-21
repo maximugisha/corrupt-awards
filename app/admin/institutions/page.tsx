@@ -9,29 +9,36 @@ import { Card } from '@/components/ui/card';
 const InstitutionsDashboard: React.FC = () => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [newInstitution, setNewInstitution] = useState({ name: '', status: false });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchInstitutions();
-  }, []);
+    fetchInstitutions(currentPage);
+  }, [currentPage]);
 
-  const fetchInstitutions = async () => {
-    const response = await axios.get('/api/institutions');
-    setInstitutions(response.data);
+  const fetchInstitutions = async (page: number) => {
+    const response = await axios.get(`/api/institutions?page=${page}`);
+    setInstitutions(response.data.data);
+    setTotalPages(response.data.pages);
   };
 
   const handleCreateInstitution = async () => {
     await axios.post('/api/institutions', newInstitution);
-    fetchInstitutions();
+    fetchInstitutions(currentPage);
   };
 
   const handleUpdateInstitution = async (id: number, data: Partial<Institution>) => {
     await axios.put('/api/institutions', { id, ...data });
-    fetchInstitutions();
+    fetchInstitutions(currentPage);
   };
 
   const handleDeleteInstitution = async (id: number) => {
     await axios.delete('/api/institutions', { data: { institutionId: id } });
-    fetchInstitutions();
+    fetchInstitutions(currentPage);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -73,6 +80,11 @@ const InstitutionsDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        <div className="flex justify-between mt-4">
+          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
+        </div>
       </Card>
     </div>
   );
