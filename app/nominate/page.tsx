@@ -61,7 +61,7 @@ export default function CreateNomineePage() {
     async function fetchData() {
       try {
         const [categoriesRes, institutionsRes, positionsRes, districtsRes] = await Promise.all([
-          fetch("/api/ratingcategories/"),
+          fetch("/api/rating-categories/"),
           fetch("/api/institutions/"),
           fetch("/api/positions/"),
           fetch("/api/districts/")

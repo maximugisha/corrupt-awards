@@ -26,7 +26,7 @@ export default function RateInstitutionPage({
 
         // Fetch categories and institution details once params are resolved
         const fetchCategories = async () => {
-          const response = await fetch("/api/ratingcategories/");
+          const response = await fetch("/api/rating-categories/");
           if (!response.ok) {
             throw new Error("Failed to fetch categories.");
           }
