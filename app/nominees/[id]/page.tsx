@@ -70,7 +70,7 @@ export default function NomineePage({
             <div>
               <Avatar className="w-24 h-24 mb-4">
                 <Image
-                  src={nominee.image}
+                  src={nominee.image ? nominee.image : "/npp.png"}
                   alt={nominee.name}
                   width={96}
                   height={96}
