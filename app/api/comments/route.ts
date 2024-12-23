@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
+    const nomineeId = searchParams.get('nomineeId');
 
     if (id) {
       // Fetch a specific comment by ID
@@ -43,7 +44,14 @@ export async function GET(req: NextRequest) {
       }
 
       return NextResponse.json(comment);
-    } else {
+    } else if (nomineeId) {
+      // Fetch comments by User ID
+      const comments = await prisma.comment.findMany({
+        where: { nomineeId: parseInt(nomineeId, 10) },
+      });
+
+      return NextResponse.json(comments);
+    }  else {
       // Fetch all comments
       const filters = buildFilters(searchParams, {
         searchFields: ['name'],
