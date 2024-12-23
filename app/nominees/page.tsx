@@ -84,19 +84,27 @@ const NomineeList: React.FC = () => {
   };
 
   const renderNomineeRating = (ratings: Rating[]) => {
-    if (!ratings?.length) return <p>No ratings available</p>;
+    if (!ratings?.length)
+      return <p className={"text-red-400"}>No ratings available</p>;
 
     return ratings.slice(0, 2).map((rating) => (
       <div key={rating.id} className="border-t pt-2 mt-2">
-        <div className="font-medium">{rating.ratingCategory.name}</div>
+        <div className="font-medium text-purple-400">
+          {rating.ratingCategory.name}
+        </div>
         <div className="text-sm text-gray-600">
           <p>Weight: {rating.ratingCategory.weight}%</p>
           <p>Score: {rating.score}/5</p>
         </div>
-        <p className="text-sm mt-1">{rating.ratingCategory.description}</p>
-        <p className="text-sm mt-1">
-          Evidence: {rating.evidence || "None provided"}
+        <p className="text-sm mt-1 text-gray-500">
+          {rating.ratingCategory.description}
         </p>
+        <p className="text-sm mt-1 text-black">
+          Evidence:
+        </p>
+        <div className="text-sm text-blue-400">
+          {rating.evidence || "None provided"}
+        </div>
       </div>
     ));
   };
@@ -116,14 +124,17 @@ const NomineeList: React.FC = () => {
                 <div className="flex flex-col items-center">
                   <Avatar className="w-24 h-24 mb-4">
                     <Image
-                      src={nominee.image ? nominee.image : "/pp.jg"}
+                      src={nominee.image ? nominee.image : "/npp.png"}
                       alt={nominee.name}
                       width={96}
                       height={96}
                     />
                   </Avatar>
                   <h2 className="text-xl text-cyan-700 font-semibold mb-2">
-                    <Link href={`/nominees/${nominee.id}`} className="hover:underline">
+                    <Link
+                      href={`/nominees/${nominee.id}`}
+                      className="hover:underline"
+                    >
                       {nominee.name}
                     </Link>
                   </h2>
@@ -134,12 +145,14 @@ const NomineeList: React.FC = () => {
 
                 <div className="space-y-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2">Recent Ratings</h3>
+                    <h3 className="font-medium text-black mb-2">
+                      Recent Ratings
+                    </h3>
                     {renderNomineeRating(nominee.rating)}
                   </div>
 
                   <div className="space-y-3">
-                    <h3 className="font-medium">Comments</h3>
+                    <h3 className="font-medium text-green-400">Comments</h3>
                     <div className="max-h-40 overflow-y-auto space-y-2">
                       {comments[nominee.id]?.length > 0 ? (
                         comments[nominee.id].map((comment) => (
@@ -169,7 +182,7 @@ const NomineeList: React.FC = () => {
                         placeholder="Add a comment..."
                         className="flex-grow"
                         onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             handleAddComment(nominee.id);
                           }
                         }}
