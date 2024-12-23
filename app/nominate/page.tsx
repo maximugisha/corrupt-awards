@@ -8,6 +8,8 @@ import {
 } from "@/types/interfaces";
 import { useRouter } from "next/navigation";
 import { PlusCircle } from 'lucide-react';
+import { uploadImage } from '@/services/uploadService';
+
 
 interface Rating {
   ratingCategoryId: number;
@@ -25,6 +27,8 @@ interface NewNominee {
   position: string;
   institution: string;
   district: string;
+  evidence: string;
+  image: string;
 }
 
 export default function CreateNomineePage() {
@@ -33,6 +37,8 @@ export default function CreateNomineePage() {
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [nomineeName, setNomineeName] = useState<string>("");
   const [nomineeEvidence, setNomineeEvidence] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -52,10 +58,13 @@ export default function CreateNomineePage() {
     name: '',
     position: '',
     institution: '',
-    district: ''
+    district: '',
+    evidence: '',
+    image: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -91,6 +100,12 @@ export default function CreateNomineePage() {
 
     fetchData();
   }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
 
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,7 +160,7 @@ export default function CreateNomineePage() {
       setInstitutionId(newInstitutionId);
       setDistrictId(newDistrictId);
       setShowNewNominee(false);
-      setNewNominee({ name: '', position: '', institution: '', district: '' });
+      setNewNominee({ name: '', position: '', institution: '', district: '', evidence: '', image: '' });
     } catch (error) {
       console.error('Error in quick add:', error);
       setError('Failed to add new nominee details. Please try again.');
@@ -258,6 +273,11 @@ export default function CreateNomineePage() {
     setError(null);
 
     try {
+      let uploadedImageUrl = imageUrl;
+      if (imageFile) {
+        uploadedImageUrl = await uploadImage(imageFile);
+        setImageUrl(uploadedImageUrl);
+      }
       const payload = {
         nomineeData: {
           name: nomineeName,
@@ -265,6 +285,7 @@ export default function CreateNomineePage() {
           positionId,
           districtId,
           evidence: nomineeEvidence,
+          image: uploadedImageUrl,
         },
         ratings: ratings.map((rating) => ({
           userId: 1,
@@ -272,7 +293,6 @@ export default function CreateNomineePage() {
           severity: Math.floor(Math.random() * 5) + 1,
         })),
       };
-
       const response = await fetch("/api/nominees/rate/", {
         method: "POST",
         headers: {
@@ -280,12 +300,15 @@ export default function CreateNomineePage() {
         },
         body: JSON.stringify(payload),
       });
+      console.log("sent  payload", payload)
 
       if (!response.ok) {
         throw new Error('Failed to submit nominee');
       }
 
       router.push("/nominees");
+      setImageFile(null);
+      setImageUrl(null);
     } catch (error) {
       console.error("Error submitting nominee:", error);
       setError("Failed to submit nominee. Please try again.");
@@ -314,6 +337,20 @@ export default function CreateNomineePage() {
           <h2 className="text-xl text-gray-700 font-semibold mb-4">
             Basic Information
           </h2>
+
+
+          {/* Image Upload Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Upload Image
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="mt-1 block w-full text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </label>
+          </div>
           
           {/* Quick Add Nominee */}
           {!showNewNominee ? (
@@ -372,7 +409,7 @@ export default function CreateNomineePage() {
                   type="button"
                   onClick={() => {
                     setShowNewNominee(false);
-                    setNewNominee({ name: '', position: '', institution: '', district: '' });
+                    setNewNominee({ name: '', position: '', institution: '', district: '', evidence: '', image: ''  });
                   }}
                   className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                 >

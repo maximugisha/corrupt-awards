@@ -3,7 +3,9 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import React, { useEffect, useState } from "react";
-import { Nominee } from "@/types/interfaces"; // Adjust imports to match your types
+import { Nominee } from "@/types/interfaces";
+import { Avatar } from "@/components/ui/avatar"; // Adjust imports to match your types
+import Image from 'next/image';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -66,6 +68,14 @@ export default function NomineePage({
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
+              <Avatar className="w-24 h-24 mb-4">
+                <Image
+                  src={nominee.image}
+                  alt={nominee.name}
+                  width={96}
+                  height={96}
+                />
+              </Avatar>
               <h1 className="text-3xl text-cyan-900 font-bold">{nominee.name}</h1>
               <p className="text-xl text-gray-600">{nominee.position.name}</p>
               <p className="text-gray-500">{nominee.institution.name}</p>

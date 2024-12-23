@@ -18,9 +18,11 @@ model User {
   name      String
   email     String              @unique
   password  String
+  image     String?
   nominated NomineeRating[]
   reported  InstitutionRating[]
   createdAt DateTime            @default(now())
+  comments  Comment[]
 }
 
 model Nominee {
@@ -29,38 +31,41 @@ model Nominee {
   positionId    Int
   institutionId Int
   districtId    Int
+  image         String?
   rating        NomineeRating[]
   position      Position        @relation(fields: [positionId], references: [id])
   institution   Institution     @relation(fields: [institutionId], references: [id])
   district      District        @relation(fields: [districtId], references: [id])
   status        Boolean         @default(false)
   evidence      String? // Nullable field for storing evidence
-  createdAt DateTime            @default(now())
+  createdAt     DateTime        @default(now())
+  comments      Comment[]
 }
 
 model Position {
-  id       Int       @id @default(autoincrement())
-  name     String
-  nominees Nominee[]
-  createdAt DateTime            @default(now())
+  id        Int       @id @default(autoincrement())
+  name      String
+  nominees  Nominee[]
+  createdAt DateTime  @default(now())
 }
 
 model Institution {
   id       Int       @id @default(autoincrement())
   name     String
-  status        Boolean         @default(false)
+  status   Boolean   @default(false)
   nominees Nominee[]
+  comments Comment[]
 
-  rating InstitutionRating[]
+  rating    InstitutionRating[]
   createdAt DateTime            @default(now())
 }
 
 model District {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  region   String
-  nominees Nominee[]
-  createdAt DateTime            @default(now())
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  region    String
+  nominees  Nominee[]
+  createdAt DateTime  @default(now())
 }
 
 enum Severity {
@@ -79,7 +84,7 @@ model NomineeRating {
   score            Int
   severity         Int
   evidence         String
-  createdAt DateTime            @default(now())
+  createdAt        DateTime       @default(now())
   nominee          Nominee        @relation(fields: [nomineeId], references: [id])
   user             User           @relation(fields: [userId], references: [id])
   ratingCategory   RatingCategory @relation(fields: [ratingCategoryId], references: [id])
@@ -93,7 +98,7 @@ model InstitutionRating {
   score            Int
   severity         Int
   evidence         String
-  createdAt DateTime            @default(now())
+  createdAt        DateTime       @default(now())
   institution      Institution    @relation(fields: [institutionId], references: [id])
   user             User           @relation(fields: [userId], references: [id])
   ratingCategory   RatingCategory @relation(fields: [ratingCategoryId], references: [id])
@@ -105,7 +110,7 @@ model Department {
   categories RatingCategory[]
 
   InstitutionRatingCategory InstitutionRatingCategory[]
-  createdAt DateTime            @default(now())
+  createdAt                 DateTime                    @default(now())
 }
 
 model ImpactArea {
@@ -114,12 +119,12 @@ model ImpactArea {
   categories RatingCategory[]
 
   InstitutionRatingCategory InstitutionRatingCategory[]
-  createdAt DateTime            @default(now())
+  createdAt                 DateTime                    @default(now())
 }
 
 model RatingCategory {
   id          Int          @id @default(autoincrement())
-  keyword String @unique
+  keyword     String       @unique
   name        String
   icon        String
   description String
@@ -131,18 +136,30 @@ model RatingCategory {
   NomineeRating NomineeRating[]
 
   InstitutionRating InstitutionRating[]
-  createdAt DateTime            @default(now())
+  createdAt         DateTime            @default(now())
 }
 
 model InstitutionRatingCategory {
   id          Int          @id @default(autoincrement())
-  keyword String @unique
+  keyword     String       @unique
   name        String
   icon        String
   description String
   weight      Int
   examples    String[]
-  impactAreas ImpactArea[] 
+  impactAreas ImpactArea[]
   departments Department[]
-  createdAt DateTime            @default(now())
+  createdAt   DateTime     @default(now())
+}
+
+model Comment {
+  id            Int          @id @default(autoincrement())
+  content       String
+  userId        Int
+  nomineeId     Int?
+  institutionId Int?
+  createdAt     DateTime     @default(now())
+  user          User         @relation(fields: [userId], references: [id])
+  nominee       Nominee?     @relation(fields: [nomineeId], references: [id])
+  institution   Institution? @relation(fields: [institutionId], references: [id])
 }

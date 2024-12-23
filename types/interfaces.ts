@@ -66,6 +66,7 @@ export interface Position {
 
 export interface Institution {
     id: number;
+    image?: string;
     name: string;
     status: boolean;
     rating: InstitutionRating[];
@@ -75,13 +76,14 @@ export interface Institution {
 }
 
 export interface District {
-    id: number;
-    name: string;
-    region: string;
-    createdAt: string;
+  id: number;
+  name: string;
+  region: string;
+  createdAt: string;
 }
 
 export interface Nominee {
+    image?: string;
     id: number;
     name: string;
     positionId: number;
