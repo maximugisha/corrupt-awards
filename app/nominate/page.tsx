@@ -37,6 +37,8 @@ export default function CreateNomineePage() {
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [nomineeName, setNomineeName] = useState<string>("");
   const [nomineeEvidence, setNomineeEvidence] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -56,12 +58,13 @@ export default function CreateNomineePage() {
     name: '',
     position: '',
     institution: '',
-    district: ''
+    district: '',
+    evidence: '',
+    image: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -157,7 +160,7 @@ export default function CreateNomineePage() {
       setInstitutionId(newInstitutionId);
       setDistrictId(newDistrictId);
       setShowNewNominee(false);
-      setNewNominee({ name: '', position: '', institution: '', district: '' });
+      setNewNominee({ name: '', position: '', institution: '', district: '', evidence: '', image: '' });
     } catch (error) {
       console.error('Error in quick add:', error);
       setError('Failed to add new nominee details. Please try again.');
@@ -270,7 +273,7 @@ export default function CreateNomineePage() {
     setError(null);
 
     try {
-      let uploadedImageUrl = null;
+      let uploadedImageUrl = imageUrl;
       if (imageFile) {
         uploadedImageUrl = await uploadImage(imageFile);
         setImageUrl(uploadedImageUrl);
@@ -297,6 +300,7 @@ export default function CreateNomineePage() {
         },
         body: JSON.stringify(payload),
       });
+      console.log("sent  payload", payload)
 
       if (!response.ok) {
         throw new Error('Failed to submit nominee');
@@ -405,7 +409,7 @@ export default function CreateNomineePage() {
                   type="button"
                   onClick={() => {
                     setShowNewNominee(false);
-                    setNewNominee({ name: '', position: '', institution: '', district: '' });
+                    setNewNominee({ name: '', position: '', institution: '', district: '', evidence: '', image: ''  });
                   }}
                   className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                 >
