@@ -103,7 +103,7 @@ const NomineeList: React.FC = () => {
                                 <div className="flex flex-col items-center">
                                     <Avatar className="w-24 h-24 mb-4">
                                         <Image
-                                          src={`/api/placeholder/${nominee.id}`}
+                                          src={nominee.image ? nominee.image : "/pp.jpg"}
                                           alt={nominee.name}
                                           width={96}
                                           height={96}

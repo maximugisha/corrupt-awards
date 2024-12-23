@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const { name, positionId, institutionId, districtId, status, evidence } = await req.json();
+        const { name, positionId, institutionId, districtId, status, evidence, image } = await req.json();
 
         const newNominee = await prisma.nominee.create({
             data: {
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
                 districtId,
                 status,
                 evidence,
+                image,
             },
             include: {
                 position: true,
