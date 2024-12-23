@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     const nomineeId = searchParams.get('nomineeId');
+    const institutionId = searchParams.get('institutionId');
 
     if (id) {
       // Fetch a specific comment by ID
@@ -51,7 +52,14 @@ export async function GET(req: NextRequest) {
       });
 
       return NextResponse.json(comments);
-    }  else {
+    }else if (institutionId) {
+      // Fetch comments by User ID
+      const comments = await prisma.comment.findMany({
+        where: { institutionId: parseInt(institutionId, 10) },
+      });
+
+      return NextResponse.json(comments);
+    }   else {
       // Fetch all comments
       const filters = buildFilters(searchParams, {
         searchFields: ['name'],
