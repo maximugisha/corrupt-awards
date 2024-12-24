@@ -5,12 +5,17 @@ import { Nominee, Position, Institution, District } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const NomineesDashboard: React.FC = () => {
+  const { toast } = useToast();
   const [nominees, setNominees] = useState<Nominee[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [newNominee, setNewNominee] = useState({
     name: "",
     positionId: 0,
@@ -19,6 +24,18 @@ const NomineesDashboard: React.FC = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [uploadStatus, setUploadStatus] = useState<{
+    status: 'idle' | 'loading' | 'success' | 'error';
+    message: string;
+    summary?: {
+      total: number;
+      successful: number;
+      failed: number;
+    };
+  }>({
+    status: 'idle',
+    message: '',
+  });
 
   useEffect(() => {
     fetchNominees(currentPage);
@@ -28,51 +45,146 @@ const NomineesDashboard: React.FC = () => {
   }, [currentPage]);
 
   const fetchNominees = async (page: number) => {
-    const response = await axios.get(`/api/nominees?page=${page}`);
-    setNominees(response.data.data);
-    setTotalPages(response.data.pages);
+    try {
+      setIsLoading(true);
+      const response = await axios.get(`/api/nominees?page=${page}`);
+      setNominees(response.data.data);
+      setTotalPages(response.data.pages);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch nominees",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fetchPositions = async () => {
-    const response = await axios.get("/api/positions");
-    setPositions(response.data.data);
+    try {
+      const response = await axios.get("/api/positions");
+      setPositions(response.data.data);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch positions",
+      });
+    }
   };
 
   const fetchInstitutions = async () => {
-    const response = await axios.get("/api/institutions");
-    setInstitutions(response.data.data);
+    try {
+      const response = await axios.get("/api/institutions");
+      setInstitutions(response.data.data);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch institutions",
+      });
+    }
   };
 
   const fetchDistricts = async () => {
-    const response = await axios.get("/api/districts");
-    setDistricts(response.data.data);
+    try {
+      const response = await axios.get("/api/districts");
+      setDistricts(response.data.data);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch districts",
+      });
+    }
   };
 
   const handleCreateNominee = async () => {
-    await axios.post("/api/nominees", newNominee);
-    fetchNominees(currentPage);
+    try {
+      await axios.post("/api/nominees", newNominee);
+      fetchNominees(currentPage);
+      setNewNominee({
+        name: "",
+        positionId: 0,
+        institutionId: 0,
+        districtId: 0,
+      });
+      toast({
+        title: "Success",
+        description: "Nominee created successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create nominee",
+      });
+    }
   };
 
   const handleUpdateNominee = async (id: number, data: Partial<Nominee>) => {
-    await axios.put("/api/nominees", { id, ...data });
-    fetchNominees(currentPage);
+    try {
+      await axios.put(`/api/nominees/${id}`, data);
+      fetchNominees(currentPage);
+      toast({
+        title: "Success",
+        description: "Nominee updated successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update nominee",
+      });
+    }
   };
 
   const handleDeleteNominee = async (id: number) => {
-    await axios.delete("/api/nominees", { data: { nomineeId: id } });
-    fetchNominees(currentPage);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (!window.confirm("Are you sure you want to delete this nominee?")) {
+      return;
+    }
+    
+    try {
+      await axios.delete(`/api/nominees/${id}`);
+      fetchNominees(currentPage);
+      toast({
+        title: "Success",
+        description: "Nominee deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete nominee",
+      });
+    }
   };
 
   const handleBulkUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
     const file = event.target.files?.[0];
+    
     if (!file) {
-      console.error('No file selected');
+      setUploadStatus({
+        status: 'error',
+        message: 'Please select a CSV file to upload',
+      });
       return;
     }
+
+    if (!file.name.endsWith('.csv')) {
+      setUploadStatus({
+        status: 'error',
+        message: 'Please upload a valid CSV file',
+      });
+      return;
+    }
+
+    setUploadStatus({
+      status: 'loading',
+      message: 'Processing upload...',
+    });
 
     const formData = new FormData();
     formData.append('file', file);
@@ -89,179 +201,239 @@ const NomineesDashboard: React.FC = () => {
         throw new Error(data.error || 'Upload failed');
       }
 
-      // Handle success
-      console.log('Upload summary:', data.summary);
-      console.log('Detailed results:', data.results);
+      setUploadStatus({
+        status: 'success',
+        message: 'Upload completed successfully',
+        summary: {
+          total: data.summary.total,
+          successful: data.summary.successful,
+          failed: data.summary.failed,
+        },
+      });
 
-      if (data.summary.failed > 0) {
-        console.warn(`${data.summary.failed} nominees failed to upload`);
-      }
+      // Refresh nominees list
+      await fetchNominees(currentPage);
 
+      // Reset file input
+      event.target.value = '';
+
+      toast({
+        title: "Success",
+        description: `Successfully uploaded ${data.summary.successful} nominees`,
+      });
     } catch (error) {
-      console.error('Upload failed:', error);
-      // Show error message to user
+      setUploadStatus({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Upload failed',
+      });
+      
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to process bulk upload",
+      });
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl text-black font-bold mb-4">Nominees Dashboard</h1>
-      <Card className="mb-4">
-        <h2 className="text-xl text-blue-600 font-semibold">Create Nominee</h2>
-        <Input
-          type="text"
-          placeholder="Name"
-          value={newNominee.name}
-          onChange={(e) =>
-            setNewNominee({ ...newNominee, name: e.target.value })
-          }
-          className="mr-2 text-black"
-        />
-        <select
-          value={newNominee.positionId}
-          onChange={(e) =>
-            setNewNominee({ ...newNominee, positionId: Number(e.target.value) })
-          }
-          className="mr-2 text-black"
-        >
-          <option value="">Select Position</option>
-          {positions.map((position) => (
-            <option key={position.id} value={position.id}>
-              {position.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={newNominee.institutionId}
-          onChange={(e) =>
-            setNewNominee({
-              ...newNominee,
-              institutionId: Number(e.target.value),
-            })
-          }
-          className="mr-2 text-black"
-        >
-          <option value="">Select Institution</option>
-          {institutions.map((institution) => (
-            <option key={institution.id} value={institution.id}>
-              {institution.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={newNominee.districtId}
-          onChange={(e) =>
-            setNewNominee({ ...newNominee, districtId: Number(e.target.value) })
-          }
-          className="mr-2 text-black"
-        >
-          <option value="">Select District</option>
-          {districts.map((district) => (
-            <option key={district.id} value={district.id}>
-              {district.name}
-            </option>
-          ))}
-        </select>
+      <h1 className="text-2xl font-bold mb-4">Nominees Dashboard</h1>
+
+      {/* Create Nominee Form */}
+      <Card className="p-4 mb-4">
+        <h2 className="text-xl font-semibold mb-4">Create Nominee</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Input
+            type="text"
+            placeholder="Name"
+            value={newNominee.name}
+            onChange={(e) =>
+              setNewNominee({ ...newNominee, name: e.target.value })
+            }
+          />
+          <select
+            value={newNominee.positionId}
+            onChange={(e) =>
+              setNewNominee({ ...newNominee, positionId: Number(e.target.value) })
+            }
+            className="border rounded p-2"
+          >
+            <option value="">Select Position</option>
+            {positions.map((position) => (
+              <option key={position.id} value={position.id}>
+                {position.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={newNominee.institutionId}
+            onChange={(e) =>
+              setNewNominee({
+                ...newNominee,
+                institutionId: Number(e.target.value),
+              })
+            }
+            className="border rounded p-2"
+          >
+            <option value="">Select Institution</option>
+            {institutions.map((institution) => (
+              <option key={institution.id} value={institution.id}>
+                {institution.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={newNominee.districtId}
+            onChange={(e) =>
+              setNewNominee({ ...newNominee, districtId: Number(e.target.value) })
+            }
+            className="border rounded p-2"
+          >
+            <option value="">Select District</option>
+            {districts.map((district) => (
+              <option key={district.id} value={district.id}>
+                {district.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <Button
           onClick={handleCreateNominee}
-          className="mt-2 bg-blue-500 text-white"
+          className="mt-4"
         >
-          Create
+          Create Nominee
         </Button>
       </Card>
-      <Card className="mb-4">
-        <h2 className="text-xl text-blue-600 font-semibold">Bulk Upload</h2>
-        <form>
-          <input
+
+      {/* Bulk Upload Section */}
+      <Card className="p-4 mb-4">
+        <h2 className="text-xl font-semibold mb-4">Bulk Upload</h2>
+        <div className="space-y-4">
+          <Input
             type="file"
             accept=".csv"
             onChange={handleBulkUpload}
-            className="mt-2 ml-4 text-black"
+            disabled={uploadStatus.status === 'loading'}
           />
-          <Button type="submit" className="mt-2 bg-blue-500 text-white">
-            Upload
-          </Button>
-        </form>
-      </Card>
-      <Card>
-        <h2 className="text-xl text-blue-600 font-semibold">Nominees</h2>
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="py-2 text-black text-left">ID</th>
-              <th className="py-2 text-black text-left">Image</th>
-              <th className="py-2 text-black text-left">Name</th>
-              <th className="py-2 text-black text-left">Position</th>
-              <th className="py-2 text-black text-left">Institution</th>
-              <th className="py-2 text-black text-left">District</th>
-              <th className="py-2 text-black text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {nominees.map((nominee) => (
-              <tr key={nominee.id}>
-                <td className="py-2 text-black text-left">{nominee.id}</td>
-                <td className="py-2 text-black text-left">
-                  <img
-                    src={nominee.image || "/npp.png"}
-                    alt={nominee.name}
-                    className="w-16 h-16 object-cover rounded-full"
-                  />
-                </td>
-                <td className="py-2 text-black text-left">{nominee.name}</td>
-                <td className="py-2 text-black text-left">
-                  {positions.find((p) => p.id === nominee.positionId)?.name}
-                </td>
-                <td className="py-2 text-black text-left">
-                  {
-                    institutions.find((i) => i.id === nominee.institutionId)
-                      ?.name
-                  }
-                </td>
-                <td className="py-2 text-black text-left">
-                  {districts.find((d) => d.id === nominee.districtId)?.name}
-                </td>
-                <td className="py-2 text-black text-left">
-                  <Button
-                    onClick={() =>
-                      handleUpdateNominee(nominee.id, { name: "Updated Name" })
-                    }
-                    variant="secondary"
-                    className="mr-2 bg-blue-500 text-white"
-                  >
-                    Update
-                  </Button>
-                  <Button
-                    onClick={() => handleDeleteNominee(nominee.id)}
-                    variant="secondary"
-                    className="bg-blue-500 text-white"
-                  >
-                    Delete
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="flex justify-between mt-4">
-          <Button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="bg-blue-500 text-white"
-          >
-            Previous
-          </Button>
-          <span className="text-black">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="bg-blue-500 text-white"
-          >
-            Next
-          </Button>
+          {uploadStatus.status === 'loading' && (
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Processing upload...</span>
+            </div>
+          )}
+          {uploadStatus.status !== 'idle' && (
+            <Alert
+              className={`${
+                uploadStatus.status === 'success'
+                  ? 'bg-green-50 border-green-200'
+                  : uploadStatus.status === 'error'
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-blue-50 border-blue-200'
+              }`}
+            >
+              <AlertDescription>
+                {uploadStatus.message}
+                {uploadStatus.summary && (
+                  <div className="mt-2">
+                    <p>Total processed: {uploadStatus.summary.total}</p>
+                    <p>Successfully uploaded: {uploadStatus.summary.successful}</p>
+                    <p>Failed: {uploadStatus.summary.failed}</p>
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
+      </Card>
+
+      {/* Nominees Table */}
+      <Card className="p-4">
+        <h2 className="text-xl font-semibold mb-4">Nominees List</h2>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2">ID</th>
+                    <th className="px-4 py-2">Image</th>
+                    <th className="px-4 py-2">Name</th>
+                    <th className="px-4 py-2">Position</th>
+                    <th className="px-4 py-2">Institution</th>
+                    <th className="px-4 py-2">District</th>
+                    <th className="px-4 py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {nominees.map((nominee) => (
+                    <tr key={nominee.id}>
+                      <td className="px-4 py-2">{nominee.id}</td>
+                      <td className="px-4 py-2">
+                        <img
+                          src={nominee.image || "/npp.png"}
+                          alt={nominee.name}
+                          className="w-16 h-16 object-cover rounded-full"
+                        />
+                      </td>
+                      <td className="px-4 py-2">{nominee.name}</td>
+                      <td className="px-4 py-2">
+                        {positions.find((p) => p.id === nominee.positionId)?.name}
+                      </td>
+                      <td className="px-4 py-2">
+                        {institutions.find((i) => i.id === nominee.institutionId)?.name}
+                      </td>
+                      <td className="px-4 py-2">
+                        {districts.find((d) => d.id === nominee.districtId)?.name}
+                      </td>
+                      <td className="px-4 py-2">
+                        <Button
+                          onClick={() => handleUpdateNominee(nominee.id, { name: "Updated Name" })}
+                          variant="outline"
+                          className="mr-2"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteNominee(nominee.id)}
+                          variant="destructive"
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-4">
+              <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );

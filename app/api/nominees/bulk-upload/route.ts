@@ -1,40 +1,99 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { parse } from 'csv-parse/sync';
+import { NextRequest, NextResponse } from "next/server";
+import { parse } from "csv-parse/sync";
+import { prisma } from "@/lib/prisma";
 
 interface NomineeData {
   name: string;
-  positionId: number;
-  institutionId: number;
-  districtId: number;
-  evidence: string;
+  position: string;
+  institution: string;
+  district: string;
+  image?: string;
 }
 
 interface CSVRecord {
   name: string;
-  positionId: string;
-  institutionId: string;
-  districtId: string;
-  evidence?: string;
+  position: string;
+  institution: string;
+  district: string;
+  image?: string;
 }
 
-// Upload nominees to API
-async function uploadNominee(nominee: NomineeData) {
+async function validateImageUrl(url: string | undefined) {
+  if (!url) return null;
   try {
-    const response = await fetch('/api/nominees', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(nominee),
-    });
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return null;
+    }
+    return url;
+  } catch (error) {
+    console.error('Error validating image URL:', error);
+    return null;
+  }
+}
 
-    if (!response.ok) {
-      throw new Error(`Failed to upload nominee ${nominee.name}`);
+async function processNominee(record: CSVRecord) {
+  try {
+    // Validate required fields
+    if (!record.name || !record.position || !record.institution || !record.district) {
+      throw new Error("Missing required fields");
     }
 
-    return await response.json();
+    // Validate image URL if provided
+    const imageUrl = await validateImageUrl(record.image);
+
+    // Find or verify position
+    const position = await prisma.position.findFirstOrThrow({
+      where: {
+        name: {
+          equals: record.position,
+          mode: 'insensitive'
+        }
+      }
+    });
+
+    // Find or verify institution
+    const institution = await prisma.institution.findFirstOrThrow({
+      where: {
+        name: {
+          equals: record.institution,
+          mode: 'insensitive'
+        }
+      }
+    });
+
+    // Find or verify district
+    const district = await prisma.district.findFirstOrThrow({
+      where: {
+        name: {
+          equals: record.district,
+          mode: 'insensitive'
+        }
+      }
+    });
+
+    // Create nominee
+    const nominee = await prisma.nominee.create({
+      data: {
+        name: record.name,
+        positionId: position.id,
+        institutionId: institution.id,
+        districtId: district.id,
+        image: imageUrl,
+        votes: 0,
+      },
+    });
+
+    return {
+      success: true,
+      nominee: record.name,
+      data: nominee,
+    };
   } catch (error) {
-    throw error;
+    return {
+      success: false,
+      nominee: record.name,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }
 
@@ -58,46 +117,11 @@ export async function POST(request: NextRequest) {
       columns: true,
       skip_empty_lines: true,
       trim: true,
-    });
+    }) as CSVRecord[];
 
-    // Transform and validate the data
-    const nominees: NomineeData[] = records.map((record: CSVRecord) => ({
-      name: record.name,
-      positionId: parseInt(record.positionId),
-      institutionId: parseInt(record.institutionId),
-      districtId: parseInt(record.districtId),
-      evidence: record.evidence || '',
-    }));
-
-    // Validate the nominees
-    for (const nominee of nominees) {
-      if (!nominee.name || isNaN(nominee.positionId) ||
-        isNaN(nominee.institutionId) || isNaN(nominee.districtId)) {
-        return NextResponse.json({
-          error: 'Invalid data in CSV file. Please check all required fields.',
-          invalidNominee: nominee,
-        }, { status: 400 });
-      }
-    }
-
-    // Upload all nominees
+    // Process all nominees
     const results = await Promise.all(
-      nominees.map(async (nominee) => {
-        try {
-          const result = await uploadNominee(nominee);
-          return {
-            success: true,
-            nominee: nominee.name,
-            data: result,
-          };
-        } catch (error) {
-          return {
-            success: false,
-            nominee: nominee.name,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      })
+      records.map(processNominee)
     );
 
     // Calculate summary
@@ -107,7 +131,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'Bulk upload completed',
       summary: {
-        total: nominees.length,
+        total: records.length,
         successful,
         failed,
       },
@@ -124,4 +148,21 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    template: {
+      headers: ["name", "position", "institution", "district", "image"],
+      required: ["name", "position", "institution", "district"],
+      optional: ["image"],
+      example: {
+        name: "John Doe",
+        position: "Chairman",
+        institution: "Example Institution",
+        district: "Central District",
+        image: "https://example.com/image.jpg"
+      }
+    }
+  });
 }
