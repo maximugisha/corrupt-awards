@@ -56,36 +56,40 @@ const InstitutionsDashboard: React.FC = () => {
         <Button onClick={handleCreateInstitution} className="mt-2 bg-black text-white">Create</Button>
       </Card>
       <Card>
-        <h2 className="text-xl text-black font-semibold">Institutions</h2>
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="py-2 text-black text-left">ID</th>
-              <th className="py-2 text-black text-left">Name</th>
-              <th className="py-2 text-black text-left">Status</th>
-              <th className="py-2 text-black text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {institutions.map((institution) => (
-              <tr key={institution.id}>
-                <td className="py-2 text-black text-left">{institution.id}</td>
-                <td className="py-2 text-black text-left">{institution.name}</td>
-                <td className="py-2 text-black text-left">{institution.status ? 'Active' : 'Inactive'}</td>
-                <td className="py-2 text-black text-left">
-                  <Button onClick={() => handleUpdateInstitution(institution.id, { name: 'Updated Name' })} variant="secondary" className="mr-2 bg-black text-white">Update</Button>
-                  <Button onClick={() => handleDeleteInstitution(institution.id)} variant="secondary" className="bg-black text-white">Delete</Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="flex justify-between mt-4">
-          <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-black text-white">Previous</Button>
-          <span className="text-black">Page {currentPage} of {totalPages}</span>
-          <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-black text-white">Next</Button>
-        </div>
-      </Card>
+  <h2 className="text-xl text-black font-semibold">Institutions</h2>
+  <table className="min-w-full bg-white">
+    <thead>
+      <tr>
+        <th className="py-2 text-black text-left">ID</th>
+        <th className="py-2 text-black text-left">Image</th>
+        <th className="py-2 text-black text-left">Name</th>
+        <th className="py-2 text-black text-left">Status</th>
+        <th className="py-2 text-black text-left">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {institutions.map((institution) => (
+        <tr key={institution.id}>
+          <td className="py-2 text-black text-left">{institution.id}</td>
+          <td className="py-2 text-black text-left">
+            <img src={institution.image || '/npp.png'} alt={institution.name} className="w-16 h-16 object-cover rounded-full" />
+          </td>
+          <td className="py-2 text-black text-left">{institution.name}</td>
+          <td className="py-2 text-black text-left">{institution.status ? 'Active' : 'Inactive'}</td>
+          <td className="py-2 text-black text-left">
+            <Button onClick={() => handleUpdateInstitution(institution.id, { name: 'Updated Name' })} variant="secondary" className="mr-2 bg-black text-white">Update</Button>
+            <Button onClick={() => handleDeleteInstitution(institution.id)} variant="secondary" className="bg-black text-white">Delete</Button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <div className="flex justify-between mt-4">
+    <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-black text-white">Previous</Button>
+    <span className="text-black">Page {currentPage} of {totalPages}</span>
+    <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-black text-white">Next</Button>
+  </div>
+</Card>
     </div>
   );
 };
