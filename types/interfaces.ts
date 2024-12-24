@@ -15,6 +15,7 @@ export interface Comment {
     id: number;
     userId: number;
     nomineeId: number;
+    institutionId: number;
     content: string;
     createdAt: string;
     user: {

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
         createdAt: { min: new Date(), max: new Date() },
       },
     });
-    //fetch related modesl
+    //fetch related model
     const include = {
       rating: {
 
@@ -36,11 +36,12 @@ export async function GET(req: NextRequest) {
 
   export async function POST(req: NextRequest) {
     try {
-        const { name} = await req.json();
+        const { name, image} = await req.json();
 
         const newInstitution = await prisma.institution.create({
             data: {
                 name,
+                image,
             }
         });
 

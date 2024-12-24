@@ -52,6 +52,7 @@ model Position {
 model Institution {
   id       Int       @id @default(autoincrement())
   name     String
+  image    String?
   status   Boolean   @default(false)
   nominees Nominee[]
   comments Comment[]

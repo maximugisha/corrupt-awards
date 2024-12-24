@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import { RatingCategory } from "@/types/interfaces";
 import { useRouter } from "next/navigation";
 import { PlusCircle } from 'lucide-react';
+import { uploadImage } from "@/services/uploadService";
 
 interface NewInstitution {
   name: string;
   evidence: string;
+  image: string;
 }
 
 export default function CreateInstitutionPage() {
@@ -20,12 +22,15 @@ export default function CreateInstitutionPage() {
   }[]>([]);
   const [institutionName, setInstitutionName] = useState<string>("");
   const [institutionEvidence, setInstitutionEvidence] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [showNewInstitution, setShowNewInstitution] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newInstitution, setNewInstitution] = useState<NewInstitution>({
     name: '',
-    evidence: ''
+    evidence: '',
+    image: ''
   });
 
   useEffect(() => {
@@ -43,6 +48,12 @@ export default function CreateInstitutionPage() {
     fetchData();
   }, []);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+
   const handleQuickAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newInstitution.name.trim()) return;
@@ -53,13 +64,14 @@ export default function CreateInstitutionPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newInstitution),
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setInstitutionName(data.name);
+        setImageUrl(data.image);
         setInstitutionEvidence(newInstitution.evidence);
         setShowNewInstitution(false);
-        setNewInstitution({ name: '', evidence: '' });
+        setNewInstitution({ name: '', evidence: '', image: '' });
       } else {
         throw new Error('Failed to add institution');
       }
@@ -97,10 +109,16 @@ export default function CreateInstitutionPage() {
     setError(null);
 
     try {
+      let uploadedImageUrl = imageUrl;
+      if (imageFile) {
+        uploadedImageUrl = await uploadImage(imageFile);
+        setImageUrl(uploadedImageUrl);
+      }
       const payload = {
         institutionData: {
           name: institutionName,
           evidence: institutionEvidence,
+          image: uploadedImageUrl,
         },
         ratings: ratings.map((rating) => ({
           userId: 1,
@@ -117,6 +135,7 @@ export default function CreateInstitutionPage() {
         },
         body: JSON.stringify(payload),
       });
+      console.log("payload", payload);
 
       if (response.ok) {
         router.push("/institutions");
@@ -151,6 +170,19 @@ export default function CreateInstitutionPage() {
           <h2 className="text-xl text-gray-700 font-semibold mb-4">
             Basic Information
           </h2>
+
+          {/* Image Upload Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Upload Image
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="mt-1 block w-full text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </label>
+          </div>
 
           {/* Quick Add Institution */}
           {!showNewInstitution ? (
@@ -207,7 +239,7 @@ export default function CreateInstitutionPage() {
                   type="button"
                   onClick={() => {
                     setShowNewInstitution(false);
-                    setNewInstitution({ name: '', evidence: '' });
+                    setNewInstitution({ name: '', evidence: '', image: '' });
                   }}
                   className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
                 >
