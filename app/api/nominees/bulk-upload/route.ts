@@ -9,10 +9,18 @@ interface NomineeData {
   evidence: string;
 }
 
+interface CSVRecord {
+  name: string;
+  positionId: string;
+  institutionId: string;
+  districtId: string;
+  evidence?: string;
+}
+
 // Upload nominees to API
 async function uploadNominee(nominee: NomineeData) {
   try {
-    const response = await fetch('http://localhost:3000/api/nominees', {
+    const response = await fetch('/api/nominees', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,7 +61,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Transform and validate the data
-    const nominees: NomineeData[] = records.map((record: any) => ({
+    const nominees: NomineeData[] = records.map((record: CSVRecord) => ({
       name: record.name,
       positionId: parseInt(record.positionId),
       institutionId: parseInt(record.institutionId),
