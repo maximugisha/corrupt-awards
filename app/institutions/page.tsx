@@ -61,10 +61,6 @@ const InstitutionList: React.FC = () => {
     initialize();
   }, []);
 
-  // const fetchInstitutions = async (): Promise<InstitutionResponse> => {
-  //   const response = await fetch(`/api/institutions/`);
-  //   return response.json();
-  // };
 
   const handleAddComment = async (institutionId: number) => {
     if (!newComments[institutionId]?.trim()) return;
