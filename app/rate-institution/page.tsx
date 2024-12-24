@@ -204,8 +204,8 @@ export default function CreateInstitutionPage() {
                 className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 ml-4"
                 disabled
               >
-                <PlusCircle className="w-4 h-4" />
-                Add New
+                {/*<PlusCircle className="w-4 h-4" />*/}
+                {/*Add New*/}
               </button>
             </div>
           ) : (
