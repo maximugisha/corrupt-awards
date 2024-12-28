@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { District } from '@prisma/client';
 import { Input } from '@/components/ui/input';
@@ -28,23 +28,24 @@ const DistrictsDashboard: React.FC = () => {
     message: '',
   });
 
-  useEffect(() => {
-    fetchDistricts(currentPage);
-  }, [currentPage]);
-
-  const fetchDistricts = async (page: number) => {
+  const fetchDistricts = useCallback(async (page: number) => {
     try {
       const response = await axios.get(`/api/districts?page=${page}`);
       setDistricts(response.data.data);
       setTotalPages(response.data.pages);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching districts:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch districts",
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchDistricts(currentPage);
+  }, [currentPage, fetchDistricts]);
 
   const handleCreateDistrict = async () => {
     try {
@@ -64,7 +65,8 @@ const DistrictsDashboard: React.FC = () => {
         title: "Success",
         description: "District created successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error creating district:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -81,7 +83,8 @@ const DistrictsDashboard: React.FC = () => {
         title: "Success",
         description: "District updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error updating district:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -102,7 +105,8 @@ const DistrictsDashboard: React.FC = () => {
         title: "Success",
         description: "District deleted successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error deleting district:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -171,7 +175,8 @@ const DistrictsDashboard: React.FC = () => {
         title: "Success",
         description: `Successfully uploaded ${data.summary.successful} districts`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error processing bulk upload:', error);
       setUploadStatus({
         status: 'error',
         message: error instanceof Error ? error.message : 'Upload failed',
