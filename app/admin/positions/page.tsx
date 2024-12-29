@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Position } from '@prisma/client';
 import { Input } from '@/components/ui/input';
@@ -28,23 +28,24 @@ const PositionsDashboard: React.FC = () => {
     message: '',
   });
 
-  useEffect(() => {
-    fetchPositions(currentPage);
-  }, [currentPage]);
-
-  const fetchPositions = async (page: number) => {
+  const fetchPositions = useCallback(async (page: number) => {
     try {
       const response = await axios.get(`/api/positions?page=${page}`);
       setPositions(response.data.data);
       setTotalPages(response.data.pages);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching positions:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch positions",
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchPositions(currentPage);
+  }, [currentPage, fetchPositions]);
 
   const handleCreatePosition = async () => {
     try {
@@ -64,7 +65,8 @@ const PositionsDashboard: React.FC = () => {
         title: "Success",
         description: "Position created successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error creating position:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -81,7 +83,8 @@ const PositionsDashboard: React.FC = () => {
         title: "Success",
         description: "Position updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error updating position:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -102,7 +105,8 @@ const PositionsDashboard: React.FC = () => {
         title: "Success",
         description: "Position deleted successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error deleting position:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -161,17 +165,15 @@ const PositionsDashboard: React.FC = () => {
         },
       });
 
-      // Refresh positions list
       await fetchPositions(currentPage);
-
-      // Reset file input
       event.target.value = '';
 
       toast({
         title: "Success",
         description: `Successfully uploaded ${data.summary.successful} positions`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error processing bulk upload:', error);
       setUploadStatus({
         status: 'error',
         message: error instanceof Error ? error.message : 'Upload failed',
@@ -275,15 +277,15 @@ const PositionsDashboard: React.FC = () => {
                   <td className="py-2 text-black text-left">
                     <Button 
                       onClick={() => handleUpdatePosition(position.id, { name: 'Updated Name' })} 
-                      variant="secondary" 
-                      className="mr-2 bg-black text-white"
+                      variant="outline" 
+                      className="mr-2"
                     >
                       Update
                     </Button>
                     <Button 
                       onClick={() => handleDeletePosition(position.id)} 
                       variant="secondary" 
-                      className="bg-black text-white"
+                      className="bg-red-500 hover:bg-red-600 text-white"
                     >
                       Delete
                     </Button>
@@ -297,7 +299,7 @@ const PositionsDashboard: React.FC = () => {
           <Button 
             onClick={() => handlePageChange(currentPage - 1)} 
             disabled={currentPage === 1} 
-            className="bg-black text-white"
+            variant="outline"
           >
             Previous
           </Button>
@@ -305,7 +307,7 @@ const PositionsDashboard: React.FC = () => {
           <Button 
             onClick={() => handlePageChange(currentPage + 1)} 
             disabled={currentPage === totalPages} 
-            className="bg-black text-white"
+            variant="outline"
           >
             Next
           </Button>

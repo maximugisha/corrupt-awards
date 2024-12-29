@@ -1,6 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import Image from 'next/image';
 import { Nominee, Position, Institution, District } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,20 +38,14 @@ const NomineesDashboard: React.FC = () => {
     message: '',
   });
 
-  useEffect(() => {
-    fetchNominees(currentPage);
-    fetchPositions();
-    fetchInstitutions();
-    fetchDistricts();
-  }, [currentPage]);
-
-  const fetchNominees = async (page: number) => {
+  const fetchNominees = useCallback(async (page: number) => {
     try {
       setIsLoading(true);
       const response = await axios.get(`/api/nominees?page=${page}`);
       setNominees(response.data.data);
       setTotalPages(response.data.pages);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching nominees:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -59,49 +54,68 @@ const NomineesDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
-  const fetchPositions = async () => {
+  const fetchPositions = useCallback(async () => {
     try {
       const response = await axios.get("/api/positions");
       setPositions(response.data.data);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching positions:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch positions",
       });
     }
-  };
+  }, [toast]);
 
-  const fetchInstitutions = async () => {
+  const fetchInstitutions = useCallback(async () => {
     try {
       const response = await axios.get("/api/institutions");
       setInstitutions(response.data.data);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching institutions:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch institutions",
       });
     }
-  };
+  }, [toast]);
 
-  const fetchDistricts = async () => {
+  const fetchDistricts = useCallback(async () => {
     try {
       const response = await axios.get("/api/districts");
       setDistricts(response.data.data);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching districts:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch districts",
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchNominees(currentPage);
+    fetchPositions();
+    fetchInstitutions();
+    fetchDistricts();
+  }, [currentPage, fetchNominees, fetchPositions, fetchInstitutions, fetchDistricts]);
 
   const handleCreateNominee = async () => {
     try {
+      if (!newNominee.name || !newNominee.positionId || !newNominee.institutionId || !newNominee.districtId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please fill in all required fields",
+        });
+        return;
+      }
+
       await axios.post("/api/nominees", newNominee);
       fetchNominees(currentPage);
       setNewNominee({
@@ -114,7 +128,8 @@ const NomineesDashboard: React.FC = () => {
         title: "Success",
         description: "Nominee created successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error creating nominee:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -131,7 +146,8 @@ const NomineesDashboard: React.FC = () => {
         title: "Success",
         description: "Nominee updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error updating nominee:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -152,7 +168,8 @@ const NomineesDashboard: React.FC = () => {
         title: "Success",
         description: "Nominee deleted successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error deleting nominee:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -211,17 +228,15 @@ const NomineesDashboard: React.FC = () => {
         },
       });
 
-      // Refresh nominees list
       await fetchNominees(currentPage);
-
-      // Reset file input
       event.target.value = '';
 
       toast({
         title: "Success",
         description: `Successfully uploaded ${data.summary.successful} nominees`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error processing bulk upload:', error);
       setUploadStatus({
         status: 'error',
         message: error instanceof Error ? error.message : 'Upload failed',
@@ -377,11 +392,14 @@ const NomineesDashboard: React.FC = () => {
                     <tr key={nominee.id}>
                       <td className="px-4 py-2">{nominee.id}</td>
                       <td className="px-4 py-2">
-                        <img
-                          src={nominee.image || "/npp.png"}
-                          alt={nominee.name}
-                          className="w-16 h-16 object-cover rounded-full"
-                        />
+                        <div className="relative w-16 h-16">
+                          <Image
+                            src={nominee.image || "/npp.png"}
+                            alt={nominee.name}
+                            fill
+                            className="object-cover rounded-full"
+                          />
+                        </div>
                       </td>
                       <td className="px-4 py-2">{nominee.name}</td>
                       <td className="px-4 py-2">
@@ -402,11 +420,12 @@ const NomineesDashboard: React.FC = () => {
                           Edit
                         </Button>
                         <Button
-                          onClick={() => handleDeleteNominee(nominee.id)}
-                          variant="destructive"
-                        >
-                          Delete
-                        </Button>
+  onClick={() => handleDeleteNominee(nominee.id)}
+  variant="secondary"
+  className="bg-red-500 hover:bg-red-600 text-white"
+>
+  Delete
+</Button>
                       </td>
                     </tr>
                   ))}
@@ -431,7 +450,7 @@ const NomineesDashboard: React.FC = () => {
               >
                 Next
               </Button>
-            </div>
+              </div>
           </>
         )}
       </Card>

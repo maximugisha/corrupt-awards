@@ -1,6 +1,7 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import Image from 'next/image';
 import { Institution } from '@prisma/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,26 +29,36 @@ const InstitutionsDashboard: React.FC = () => {
     message: '',
   });
 
-  useEffect(() => {
-    fetchInstitutions(currentPage);
-  }, [currentPage]);
-
-  const fetchInstitutions = async (page: number) => {
+  const fetchInstitutions = useCallback(async (page: number) => {
     try {
       const response = await axios.get(`/api/institutions?page=${page}`);
       setInstitutions(response.data.data);
       setTotalPages(response.data.pages);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching institutions:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch institutions",
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchInstitutions(currentPage);
+  }, [currentPage, fetchInstitutions]);
 
   const handleCreateInstitution = async () => {
     try {
+      if (!newInstitution.name) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please enter an institution name",
+        });
+        return;
+      }
+
       await axios.post('/api/institutions', newInstitution);
       fetchInstitutions(currentPage);
       setNewInstitution({ name: '', status: false });
@@ -55,7 +66,8 @@ const InstitutionsDashboard: React.FC = () => {
         title: "Success",
         description: "Institution created successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error creating institution:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -72,7 +84,8 @@ const InstitutionsDashboard: React.FC = () => {
         title: "Success",
         description: "Institution updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error updating institution:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -93,7 +106,8 @@ const InstitutionsDashboard: React.FC = () => {
         title: "Success",
         description: "Institution deleted successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error deleting institution:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -152,17 +166,15 @@ const InstitutionsDashboard: React.FC = () => {
         },
       });
 
-      // Refresh institutions list
       await fetchInstitutions(currentPage);
-
-      // Reset file input
       event.target.value = '';
 
       toast({
         title: "Success",
         description: `Successfully uploaded ${data.summary.successful} institutions`,
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error processing bulk upload:', error);
       setUploadStatus({
         status: 'error',
         message: error instanceof Error ? error.message : 'Upload failed',
@@ -259,11 +271,14 @@ const InstitutionsDashboard: React.FC = () => {
               <tr key={institution.id}>
                 <td className="py-2 text-black text-left">{institution.id}</td>
                 <td className="py-2 text-black text-left">
-                  <img 
-                    src={institution.image || '/npp.png'} 
-                    alt={institution.name} 
-                    className="w-16 h-16 object-cover rounded-full"
-                  />
+                  <div className="relative w-16 h-16">
+                    <Image 
+                      src={institution.image || '/npp.png'}
+                      alt={institution.name}
+                      fill
+                      className="object-cover rounded-full"
+                    />
+                  </div>
                 </td>
                 <td className="py-2 text-black text-left">{institution.name}</td>
                 <td className="py-2 text-black text-left">

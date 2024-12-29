@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { Department } from '@prisma/client';
 import { Input } from '@/components/ui/input';
@@ -28,23 +28,24 @@ const DepartmentsDashboard: React.FC = () => {
     message: '',
   });
 
-  useEffect(() => {
-    fetchDepartments(currentPage);
-  }, [currentPage]);
-
-  const fetchDepartments = async (page: number) => {
+  const fetchDepartments = useCallback(async (page: number) => {
     try {
       const response = await axios.get(`/api/departments?page=${page}`);
       setDepartments(response.data.data);
       setTotalPages(response.data.pages);
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching departments:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to fetch departments",
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchDepartments(currentPage);
+  }, [currentPage, fetchDepartments]);
 
   const handleCreateDepartment = async () => {
     try {
@@ -64,11 +65,12 @@ const DepartmentsDashboard: React.FC = () => {
         title: "Success",
         description: "Department created successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching departments:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create department",
+        description: "Failed to fetch departments",
       });
     }
   };
@@ -81,11 +83,12 @@ const DepartmentsDashboard: React.FC = () => {
         title: "Success",
         description: "Department updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching departments:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update department",
+        description: "Failed to fetch departments",
       });
     }
   };
@@ -102,11 +105,12 @@ const DepartmentsDashboard: React.FC = () => {
         title: "Success",
         description: "Department deleted successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error('Error fetching departments:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete department",
+        description: "Failed to fetch departments",
       });
     }
   };
