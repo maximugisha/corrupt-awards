@@ -36,7 +36,7 @@ export default function CreateInstitutionPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const categoriesRes = await fetch("/api/rating-categories/");
+        const categoriesRes = await fetch("/api/institution-rating-categories/");
         const categoriesData = await categoriesRes.json();
         setCategories(categoriesData.data);
       } catch (error) {

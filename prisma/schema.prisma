@@ -92,17 +92,17 @@ model NomineeRating {
 }
 
 model InstitutionRating {
-  id               Int            @id @default(autoincrement())
+  id               Int                       @id @default(autoincrement())
   userId           Int
   institutionId    Int
   ratingCategoryId Int
   score            Int
   severity         Int
   evidence         String
-  createdAt        DateTime       @default(now())
-  institution      Institution    @relation(fields: [institutionId], references: [id])
-  user             User           @relation(fields: [userId], references: [id])
-  ratingCategory   RatingCategory @relation(fields: [ratingCategoryId], references: [id])
+  createdAt        DateTime                  @default(now())
+  institution      Institution               @relation(fields: [institutionId], references: [id])
+  user             User                      @relation(fields: [userId], references: [id])
+  ratingCategory   InstitutionRatingCategory @relation(fields: [ratingCategoryId], references: [id])
 }
 
 model Department {
@@ -136,8 +136,7 @@ model RatingCategory {
 
   NomineeRating NomineeRating[]
 
-  InstitutionRating InstitutionRating[]
-  createdAt         DateTime            @default(now())
+  createdAt DateTime @default(now())
 }
 
 model InstitutionRatingCategory {
@@ -151,6 +150,8 @@ model InstitutionRatingCategory {
   impactAreas ImpactArea[]
   departments Department[]
   createdAt   DateTime     @default(now())
+
+  InstitutionRating InstitutionRating[]
 }
 
 model Comment {

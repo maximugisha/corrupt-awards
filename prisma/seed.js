@@ -1,6 +1,9 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from "@prisma/client";
+
+import { faker } from "@faker-js/faker";
+
 const prisma = new PrismaClient();
-const { faker } = require('@faker-js/faker');
+
 
 async function main() {
     // Check if essential tables are empty (districts, institutions, users, etc.)
@@ -183,7 +186,7 @@ async function main() {
             },
             {
                 keyword: 'nepotism',
-                name: 'Leve of Nepotism',
+                name: 'Level of Nepotism',
                 icon: '👥',
                 description: 'Favoring relatives in appointments and contracts',
                 weight: 3,
