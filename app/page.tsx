@@ -31,63 +31,19 @@ interface Institution {
   rating: Rating[];
 }
 
-const MOCK_NOMINEES = [
-  {
-    id: 1,
-    name: "John Doe",
-    position: { name: "County Executive" },
-    institution: { name: "Nairobi County" },
-    rating: [{ score: 4.5, ratingCategory: { name: "Bribery", weight: 30 } }]
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    position: { name: "Director" },
-    institution: { name: "Ministry of Finance" },
-    rating: [{ score: 4.2, ratingCategory: { name: "Bribery", weight: 30 } }]
-  },
-  {
-    id: 3,
-    name: "Peter Kamau",
-    position: { name: "Chief Officer" },
-    institution: { name: "KRA" },
-    rating: [{ score: 4.0, ratingCategory: { name: "Bribery", weight: 30 } }]
-  },
-  {
-    id: 4,
-    name: "Mary Wanjiku",
-    position: { name: "Minister" },
-    institution: { name: "Ministry of Education" },
-    rating: [{ score: 3.9, ratingCategory: { name: "Bribery", weight: 30 } }]
-  }
-];
-
-const MOCK_INSTITUTIONS = [
-  {
-    id: 1,
-    name: "Kenya Revenue Authority",
-    rating: [{ score: 4.7, ratingCategory: { name: "Bribery", weight: 30 } }]
-  },
-  {
-    id: 2,
-    name: "Ministry of Health",
-    rating: [{ score: 4.5, ratingCategory: { name: "Bribery", weight: 30 } }]
-  },
-  {
-    id: 3,
-    name: "Kenya Police Service",
-    rating: [{ score: 4.3, ratingCategory: { name: "Bribery", weight: 30 } }]
-  },
-  {
-    id: 4,
-    name: "Nairobi County Government",
-    rating: [{ score: 4.1, ratingCategory: { name: "Bribery", weight: 30 } }]
-  }
-];
+interface Statistics {
+  totalInstitutions: number;
+  totalNominees: number;
+  totalInstitutionRatings: number;
+  totalNomineeRatings: number;
+  totalUsers: number;
+  totalRatings: number;
+}
 
 export default function Home() {
   const [topNominees, setTopNominees] = useState<Nominee[]>([]);
   const [topInstitutions, setTopInstitutions] = useState<Institution[]>([]);
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{
@@ -98,9 +54,27 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
-    setTopNominees(MOCK_NOMINEES);
-    setTopInstitutions(MOCK_INSTITUTIONS);
-    setIsLoading(false);
+    const fetchTopNominees = async () => {
+      const response = await fetch('/api/leaderboard/nominees');
+      const data = await response.json();
+      setTopNominees(data);
+    };
+
+    const fetchTopInstitutions = async () => {
+      const response = await fetch('/api/leaderboard/institutions');
+      const data = await response.json();
+      setTopInstitutions(data);
+    };
+
+    const fetchStatistics = async () => {
+      const response = await fetch('/api/statistics');
+      const data = await response.json();
+      setStatistics(data);
+    };
+
+    Promise.all([fetchTopNominees(), fetchTopInstitutions(), fetchStatistics()]).then(() => {
+      setIsLoading(false);
+    });
   }, []);
 
   const handleSearch = (query: string) => {
@@ -114,17 +88,17 @@ export default function Home() {
     setIsSearching(true);
     setShowResults(true);
 
-    const filteredNominees = MOCK_NOMINEES.filter(nominee => 
+    const filteredNominees = topNominees.filter(nominee =>
       nominee.name.toLowerCase().includes(query.toLowerCase()) ||
       nominee.position.name.toLowerCase().includes(query.toLowerCase()) ||
       nominee.institution.name.toLowerCase().includes(query.toLowerCase())
     );
 
-    const filteredInstitutions = MOCK_INSTITUTIONS.filter(institution =>
+    const filteredInstitutions = topInstitutions.filter(institution =>
       institution.name.toLowerCase().includes(query.toLowerCase())
     );
 
-    setSearchResults({ 
+    setSearchResults({
       nominees: filteredNominees,
       institutions: filteredInstitutions
     });
@@ -161,7 +135,7 @@ export default function Home() {
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
               {searchQuery && (
-                <button 
+                <button
                   onClick={clearSearch}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
@@ -234,8 +208,8 @@ export default function Home() {
 
             {/* Single Report Button */}
             <div className="flex">
-              <a 
-                href="/submit" 
+              <a
+                href="/submit"
                 className="bg-red-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
               >
                 <AlertTriangle className="w-5 h-5" />
@@ -251,19 +225,19 @@ export default function Home() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-slate-900">2,547</div>
+              <div className="text-3xl font-bold text-slate-900">{statistics?.totalNominees ?? 'Loading...'}</div>
               <div className="text-sm text-gray-600">Corrupt Officials</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-slate-900">312</div>
+              <div className="text-3xl font-bold text-slate-900">{statistics?.totalInstitutions ?? 'Loading...'}</div>
               <div className="text-sm text-gray-600">Institutions</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-slate-900">15,832</div>
+              <div className="text-3xl font-bold text-slate-900">{statistics?.totalRatings ?? 'Loading...'}</div>
               <div className="text-sm text-gray-600">Total Ratings</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-slate-900">8,945</div>
+              <div className="text-3xl font-bold text-slate-900">{statistics?.totalUsers ?? 'Loading...'}</div>
               <div className="text-sm text-gray-600">Active Users</div>
             </div>
           </div>
@@ -346,7 +320,7 @@ export default function Home() {
                 <div className="text-center py-8">Loading...</div>
               ) : (
                 topNominees.map((nominee) => (
-                  <a 
+                  <a
                     key={nominee.id}
                     href={`/nominees/${nominee.id}`}
                     className="block p-4 rounded-lg hover:bg-gray-50 transition border border-gray-100"
@@ -379,7 +353,7 @@ export default function Home() {
                 <div className="text-center py-8">Loading...</div>
               ) : (
                 topInstitutions.map((institution) => (
-                  <a 
+                  <a
                     key={institution.id}
                     href={`/institutions/${institution.id}`}
                     className="block p-4 rounded-lg hover:bg-gray-50 transition border border-gray-100"
