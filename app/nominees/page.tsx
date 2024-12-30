@@ -7,12 +7,130 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import { formatDistanceToNow, parseISO } from "date-fns";
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
+
+  if (now.getTime() - date.getTime() > oneWeekInMs) {
+    return formatDistanceToNow(parseISO(dateString), { addSuffix: true });
+  }
+
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+};
+
+const NomineeComments: React.FC<{ nomineeId: number }> = ({ nomineeId }) => {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await fetch(`/api/comments/?nomineeId=${nomineeId}`);
+        const data = await response.json();
+        setComments(data || []);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchComments();
+  }, [nomineeId]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      const response = await fetch("/api/comments/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nomineeId,
+          content: newComment,
+          userId: 1,
+        }),
+      });
+
+      if (response.ok) {
+        const newCommentData = await response.json();
+        setComments((prev) => [...prev, newCommentData]);
+        setNewComment("");
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  if (isLoading) {
+    return <p>Loading comments...</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <h3 className="font-medium text-green-400">Comments</h3>
+      {comments.length > 0 ? (
+        comments.map((comment) => (
+          <div
+            key={comment.id}
+            className="bg-gray-50 p-3 rounded text-sm flex items-start gap-3"
+          >
+            <Avatar className="w-8 h-8">
+              <Image
+                src={comment.user?.image || "/npp.png"}
+                alt={comment.user?.name || "User"}
+                width={32}
+                height={32}
+              />
+            </Avatar>
+            <div>
+              <p className="text-gray-900 font-medium">
+                {comment.user?.name || "Unknown User"}
+              </p>
+              <p className="text-gray-900">{comment.content}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {formatDate(comment.createdAt)}
+              </p>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-sm text-gray-500">No comments yet</p>
+      )}
+      <div className="flex gap-2">
+        <Input
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Add a comment..."
+          className="flex-grow"
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              handleAddComment();
+            }
+          }}
+        />
+        <Button onClick={handleAddComment} variant="secondary">
+          Post
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const NomineeList: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [nominees, setNominees] = useState<Nominee[]>([]);
-  const [comments, setComments] = useState<Record<number, Comment[]>>({});
-  const [newComments, setNewComments] = useState<Record<number, string>>({});
   const [meta, setMeta] = useState<{
     count: number;
     pages: number;
@@ -22,25 +140,13 @@ const NomineeList: React.FC = () => {
   useEffect(() => {
     const initialize = async () => {
       try {
-        const [nomineesData, commentsData] = await Promise.all([
-          fetchNominees(),
-          fetch('/api/comments/').then(res => res.json())
-        ]);
-
+        const nomineesData = await fetchNominees();
         setNominees(nomineesData.data);
         setMeta({
           count: nomineesData.count,
           pages: nomineesData.pages,
           currentPage: nomineesData.currentPage,
         });
-
-        // Group comments by nominee ID
-        const groupedComments = commentsData.data.reduce((acc: Record<number, Comment[]>, comment: Comment) => {
-          acc[comment.nomineeId] = [...(acc[comment.nomineeId] || []), comment];
-          return acc;
-        }, {});
-
-        setComments(groupedComments);
       } catch (error) {
         console.error("Error initializing data:", error);
       } finally {
@@ -54,33 +160,6 @@ const NomineeList: React.FC = () => {
   const fetchNominees = async (): Promise<NomineeResponse> => {
     const response = await fetch(`/api/nominees/`);
     return response.json();
-  };
-
-  const handleAddComment = async (nomineeId: number) => {
-    if (!newComments[nomineeId]?.trim()) return;
-
-    try {
-      const response = await fetch("/api/comments/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nomineeId,
-          content: newComments[nomineeId],
-          userId: 1,
-        }),
-      });
-
-      if (response.ok) {
-        const newComment = await response.json();
-        setComments(prev => ({
-          ...prev,
-          [nomineeId]: [...(prev[nomineeId] || []), newComment],
-        }));
-        setNewComments(prev => ({ ...prev, [nomineeId]: "" }));
-      }
-    } catch (error) {
-      console.error("Error adding comment:", error);
-    }
   };
 
   const renderNomineeRating = (ratings: Rating[]) => {
@@ -99,9 +178,7 @@ const NomineeList: React.FC = () => {
         <p className="text-sm mt-1 text-gray-500">
           {rating.ratingCategory.description}
         </p>
-        <p className="text-sm mt-1 text-black">
-          Evidence:
-        </p>
+        <p className="text-sm mt-1 text-black">Evidence:</p>
         <div className="text-sm text-blue-400">
           {rating.evidence || "None provided"}
         </div>
@@ -116,7 +193,7 @@ const NomineeList: React.FC = () => {
       ) : (
         <>
           <h1 className="text-3xl text-gray-600 font-bold mb-6">
-            Nominees ({meta.count})
+            Nominees
           </h1>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {nominees.map((nominee) => (
@@ -151,50 +228,7 @@ const NomineeList: React.FC = () => {
                     {renderNomineeRating(nominee.rating)}
                   </div>
 
-                  <div className="space-y-3">
-                    <h3 className="font-medium text-green-400">Comments</h3>
-                    <div className="max-h-40 overflow-y-auto space-y-2">
-                      {comments[nominee.id]?.length > 0 ? (
-                        comments[nominee.id].map((comment) => (
-                          <div
-                            key={comment.id}
-                            className="bg-gray-50 p-3 rounded text-sm"
-                          >
-                            <p className="text-gray-900">{comment.content}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-gray-500">No comments yet</p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        value={newComments[nominee.id] || ""}
-                        onChange={(e) =>
-                          setNewComments((prev) => ({
-                            ...prev,
-                            [nominee.id]: e.target.value,
-                          }))
-                        }
-                        placeholder="Add a comment..."
-                        className="flex-grow"
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            handleAddComment(nominee.id);
-                          }
-                        }}
-                      />
-                      <Button
-                        onClick={() => handleAddComment(nominee.id)}
-                        variant="secondary"
-                      >
-                        Post
-                      </Button>
-                    </div>
-                  </div>
+                  <NomineeComments nomineeId={nominee.id} />
                 </div>
 
                 <Link

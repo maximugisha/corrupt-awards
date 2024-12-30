@@ -20,7 +20,7 @@ export interface Comment {
     createdAt: string;
     user: {
         name: string;
-        avatar?: string;
+        image?: string;
     };
 }
 

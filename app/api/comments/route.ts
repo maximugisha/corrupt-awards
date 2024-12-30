@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/// GET - Get all comments or a comment by ID
+// GET - Get all comments or a comment by ID
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -38,6 +38,7 @@ export async function GET(req: NextRequest) {
       // Fetch a specific comment by ID
       const comment = await prisma.comment.findUnique({
         where: { id: parseInt(id, 10) },
+        include: { user: true },
       });
 
       if (!comment) {
@@ -46,20 +47,22 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json(comment);
     } else if (nomineeId) {
-      // Fetch comments by User ID
+      // Fetch comments by nominee ID
       const comments = await prisma.comment.findMany({
         where: { nomineeId: parseInt(nomineeId, 10) },
+        include: { user: true },
       });
 
       return NextResponse.json(comments);
-    }else if (institutionId) {
-      // Fetch comments by User ID
+    } else if (institutionId) {
+      // Fetch comments by institution ID
       const comments = await prisma.comment.findMany({
         where: { institutionId: parseInt(institutionId, 10) },
+        include: { user: true },
       });
 
       return NextResponse.json(comments);
-    }   else {
+    } else {
       // Fetch all comments
       const filters = buildFilters(searchParams, {
         searchFields: ['name'],
@@ -72,7 +75,7 @@ export async function GET(req: NextRequest) {
     }
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Error fetching comments' }, { status: 400 });
+    return NextResponse.json({ error: 'Error fetching comments here' }, { status: 400 });
   }
 }
 
