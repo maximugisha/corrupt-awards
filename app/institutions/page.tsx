@@ -125,6 +125,7 @@ const InstitutionList: React.FC = () => {
     pages: number;
     currentPage: number;
   }>({ count: 0, pages: 0, currentPage: 0 });
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     const initialize = async () => {
@@ -170,55 +171,64 @@ const InstitutionList: React.FC = () => {
     ));
   };
 
+  const filteredInstitutions = institutions.filter((institution) =>
+    institution.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {isLoading ? (
         <div>Loading...</div>
       ) : (
-        <div className="mb-6">
-          <h1 className="text-3xl text-gray-600 font-bold">
-            Institutions ({meta.count})
-          </h1>
-        </div>
-      )}
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {institutions.map((institution) => (
-          <div key={institution.id} className="bg-white rounded-lg shadow-md p-6 relative">
-            <Avatar className="w-24 h-24 mb-4">
-              <Image
-                src={institution.image ? institution.image : "/npp.png"}
-                alt={institution.name}
-                width={96}
-                height={96}
-              />
-            </Avatar>
-            <h2 className="text-xl text-cyan-700 font-semibold mb-2">
-              <a href={`/institutions/${institution.id}`} className="hover:underline">
-                {institution.name}
-              </a>
-            </h2>
-
-            <p className="text-purple-700">Most Recent Corruption Ratings</p>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <div>{renderInstitutionRating(institution.rating)}</div>
-            </div>
-
-            <p className="mt-4 text-gray-900">
-              Total Votes: {institution.rating.length}
-            </p>
-
-            <a
-              href={`/institutions/${institution.id}/rate`}
-              className="absolute top-4 right-4 bg-cyan-700 text-white py-2 px-4 rounded-md hover:bg-cyan-800 transition"
-            >
-              Rate
-            </a>
-
-            <InstitutionComments institutionId={institution.id} />
+        <>
+          <div className="mb-6">
+            <h1 className="text-3xl text-gray-600 font-bold">Institutions</h1>
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search institutions..."
+              className="w-full p-4 rounded-lg border border-gray-300 mt-4"
+            />
           </div>
-        ))}
-      </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredInstitutions.map((institution) => (
+              <div key={institution.id} className="bg-white rounded-lg shadow-md p-6 relative">
+                <Avatar className="w-24 h-24 mb-4">
+                  <Image
+                    src={institution.image ? institution.image : "/npp.png"}
+                    alt={institution.name}
+                    width={96}
+                    height={96}
+                  />
+                </Avatar>
+                <h2 className="text-xl text-cyan-700 font-semibold mb-2">
+                  <a href={`/institutions/${institution.id}`} className="hover:underline">
+                    {institution.name}
+                  </a>
+                </h2>
+
+                <p className="text-purple-700">Most Recent Corruption Ratings</p>
+                <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div>{renderInstitutionRating(institution.rating)}</div>
+                </div>
+
+                <p className="mt-4 text-gray-900">
+                  Total Votes: {institution.rating.length}
+                </p>
+
+                <a
+                  href={`/institutions/${institution.id}/rate`}
+                  className="absolute top-4 right-4 bg-cyan-700 text-white py-2 px-4 rounded-md hover:bg-cyan-800 transition"
+                >
+                  Rate
+                </a>
+
+                <InstitutionComments institutionId={institution.id} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

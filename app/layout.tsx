@@ -39,13 +39,14 @@ export default function RootLayout({
                   <Link href="/leaderboard" className="hover:text-gray-300 transition-colors">
                     Leaderboard
                   </Link>
-                  <Link 
-                    href="/submit"
-                    className="bg-white text-slate-900 px-4 py-2 rounded-md font-medium 
-                             hover:bg-gray-100 transition-colors"
-                  >
-                    Submit
-                  </Link>
+                  {/*<Link*/}
+                  {/*  href="/submit"*/}
+                  {/*  className="bg-white text-slate-900 px-4 py-2 rounded-md font-medium */}
+                  {/*           hover:bg-gray-100 transition-colors "*/}
+                  {/*  aria-disabled="true"*/}
+                  {/*>*/}
+                  {/*  Submit*/}
+                  {/*</Link>*/}
                 </div>
 
                 {/* Mobile Menu Button */}
