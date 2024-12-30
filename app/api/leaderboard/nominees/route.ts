@@ -12,10 +12,11 @@ export async function GET() {
         id: true,
         name: true,
         position: true,
+        image: true,
         institution: {
           select: {
             name: true,
-            image: true,
+
             status: true,
             rating: {
               select: {

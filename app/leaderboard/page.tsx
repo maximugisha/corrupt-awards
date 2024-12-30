@@ -25,6 +25,7 @@ interface Nominee {
     };
     rating: Rating[];
     averageRating?: number;
+    image: string;
 }
 
 interface Institution {
@@ -32,6 +33,7 @@ interface Institution {
     name: string;
     rating: Rating[];
     averageRating?: number;
+    image: string;
 }
 
 const LeaderboardPage = () => {
@@ -42,31 +44,11 @@ const LeaderboardPage = () => {
 
     useEffect(() => {
         Promise.all([
-            fetch('/api/nominees/').then(res => res.json()),
-            fetch('/api/institutions/').then(res => res.json())
+            fetch('/api/leaderboard/nominees/').then(res => res.json()),
+            fetch('/api/leaderboard/institutions/').then(res => res.json())
         ]).then(([nomineesData, institutionsData]) => {
-            // Calculate average rating for nominees
-            const rankedNominees = nomineesData.data
-              .map((nominee: Nominee) => ({
-                ...nominee,
-                averageRating: nominee.rating.reduce(
-                  (acc: number, r: Rating) => acc + r.score * (r.ratingCategory.weight / 100),
-                  0,
-                ),
-              }))
-              .sort((a: Nominee, b: Nominee) => (b.averageRating || 0) - (a.averageRating || 0));
-
-            // Calculate average rating for institutions
-            const rankedInstitutions = institutionsData.data
-                .map((institution: Institution) => ({
-                    ...institution,
-                    averageRating: institution.rating.reduce((acc: number, r: Rating) =>
-                        acc + (r.score * (r.ratingCategory.weight / 100)), 0)
-                }))
-                .sort((a: Institution, b: Institution) => (b.averageRating || 0) - (a.averageRating || 0));
-
-            setNominees(rankedNominees);
-            setInstitutions(rankedInstitutions);
+            setNominees(nomineesData);
+            setInstitutions(institutionsData);
             setIsLoading(false);
         });
     }, []);
@@ -85,13 +67,15 @@ const LeaderboardPage = () => {
         name,
         rating,
         subtitle,
-        avatar
+        avatar,
+        imageUrl
     }: {
         index: number;
         name: string;
         rating: number;
         subtitle?: string;
         avatar?: boolean;
+        imageUrl?: string;
     }) => (
         <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
             <div className="flex items-center justify-center w-8">
@@ -103,14 +87,14 @@ const LeaderboardPage = () => {
             </div>
 
             {avatar && (
-              <Avatar className="w-12 h-12">
-                  <Image
-                    src={`/api/placeholder/${index}`}
-                    alt={name}
-                    width={48}
-                    height={48}
-                  />
-              </Avatar>
+                <Avatar className="w-12 h-12">
+                    <Image
+                        src={imageUrl || "/pp.jpg"}
+                        alt={name}
+                        width={48}
+                        height={48}
+                    />
+                </Avatar>
             )}
 
             <div className="flex-grow">
@@ -177,6 +161,7 @@ const LeaderboardPage = () => {
                                         rating={nominee.averageRating || 0}
                                         subtitle={`${nominee.position.name} at ${nominee.institution.name}`}
                                         avatar={true}
+                                        imageUrl={nominee.image}
                                     />
                                 ))}
                             </CardContent>
@@ -190,6 +175,8 @@ const LeaderboardPage = () => {
                                         index={index}
                                         name={institution.name}
                                         rating={institution.averageRating || 0}
+                                        avatar={true}
+                                        imageUrl={institution.image}
                                     />
                                 ))}
                             </CardContent>
