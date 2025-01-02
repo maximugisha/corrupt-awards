@@ -1,21 +1,27 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { LogIn } from 'lucide-react';
 import Link from 'next/link';
 
+interface ResponseData {
+  "user": {
+    "id": number,
+    "name": string,
+    "email": string,
+    "image": string
+  },
+  "token": string
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Get the returnTo URL from query parameters
-  const returnTo = searchParams.get('returnTo');
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +39,6 @@ export default function LoginPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-        credentials: 'include', // Important for cookies
       });
 
       if (!response.ok) {
@@ -41,14 +46,13 @@ export default function LoginPage() {
         throw new Error(error.error);
       }
 
-      // Get the response data
-      const responseData = await response.json();
+      const responseData = await response.json() as ResponseData;
+      const token = responseData.token;
 
-      // After successful login, check for returnTo URL
-      const redirectTo = returnTo ? decodeURIComponent(returnTo) : '/';
+      // Store token in local storage
+      localStorage.setItem('token', token);
 
-      // Use replace instead of push to avoid back button issues
-      router.replace(redirectTo);
+      router.push('/');
       router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Something went wrong');

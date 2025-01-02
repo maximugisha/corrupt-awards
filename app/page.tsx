@@ -53,29 +53,42 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  useEffect(() => {
-    const fetchTopNominees = async () => {
-      const response = await fetch('/api/leaderboard/nominees');
-      const data = await response.json();
-      setTopNominees(data);
-    };
-
-    const fetchTopInstitutions = async () => {
-      const response = await fetch('/api/leaderboard/institutions');
-      const data = await response.json();
-      setTopInstitutions(data);
-    };
-
-    const fetchStatistics = async () => {
-      const response = await fetch('/api/statistics');
-      const data = await response.json();
-      setStatistics(data);
-    };
-
-    Promise.all([fetchTopNominees(), fetchTopInstitutions(), fetchStatistics()]).then(() => {
-      setIsLoading(false);
+ useEffect(() => {
+  const token = localStorage.getItem('token');
+  const fetchTopNominees = async () => {
+    const response = await fetch('/api/leaderboard/nominees', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
     });
-  }, []);
+    const data = await response.json();
+    setTopNominees(data);
+  };
+
+  const fetchTopInstitutions = async () => {
+    const response = await fetch('/api/leaderboard/institutions', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    setTopInstitutions(data);
+  };
+
+  const fetchStatistics = async () => {
+    const response = await fetch('/api/statistics', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    setStatistics(data);
+  };
+
+  Promise.all([fetchTopNominees(), fetchTopInstitutions(), fetchStatistics()]).then(() => {
+    setIsLoading(false);
+  });
+}, []);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
