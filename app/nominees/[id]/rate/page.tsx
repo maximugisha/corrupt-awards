@@ -78,6 +78,7 @@ export default function RateNomineePage({
         evidence: "Example evidence for rating", // Replace with actual evidence
       })),
     };
+    console.log('Sending payload:', payload);
 
     const response = await fetch(`/api/nominees/${nomineeId}/rate/`, {
       method: "POST",
@@ -88,7 +89,7 @@ export default function RateNomineePage({
     });
 
     if (response.ok) {
-      router.push(`/nominees/${nomineeId}/`);
+      router.push(`/nominees/${nomineeId}`);
     } else {
       console.error("Error submitting ratings:", await response.json());
     }

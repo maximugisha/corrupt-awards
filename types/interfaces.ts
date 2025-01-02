@@ -1,4 +1,5 @@
 // src/types/interfaces.ts
+
 export interface Rating {
     id: number;
     userId: number;
@@ -14,8 +15,8 @@ export interface Rating {
 export interface Comment {
     id: number;
     userId: number;
-    nomineeId: number;
-    institutionId: number;
+    nomineeId?: number;
+    institutionId?: number;
     content: string;
     createdAt: string;
     user: {
@@ -24,22 +25,10 @@ export interface Comment {
     };
 }
 
-export interface InstitutionComment {
-    id: number;
-    userId: number;
-    institutionId: number;
-    content: string;
-    createdAt: string;
-    user: {
-        name: string;
-        avatar?: string;
-    };
-}
-
 export interface InstitutionRating {
     id: number;
     userId: number;
-    nomineeId: number;
+    institutionId: number;
     ratingCategoryId: number;
     score: number;
     severity: number;
@@ -62,7 +51,9 @@ export interface RatingCategory {
 export interface Position {
     id: number;
     name: string;
+    status: boolean;
     createdAt: string;
+    nominees?: Nominee[];
 }
 
 export interface Institution {
@@ -70,29 +61,30 @@ export interface Institution {
     image?: string;
     name: string;
     status: boolean;
+    nominees?: Nominee[];
     rating: InstitutionRating[];
-    comments?: InstitutionComment[];
-    avatar?: string;
+    comments?: Comment[];
     createdAt: string;
 }
 
 export interface District {
-  id: number;
-  name: string;
-  region: string;
-  createdAt: string;
+    id: number;
+    name: string;
+    region: string;
+    status: boolean;
+    createdAt: string;
+    nominees?: Nominee[];
 }
 
 export interface Nominee {
-    image?: string;
     id: number;
     name: string;
+    image?: string;
     positionId: number;
     institutionId: number;
     districtId: number;
     status: boolean;
     evidence: string | null;
-    avatar?: string;
     comments?: Comment[];
     createdAt: string;
     rating: Rating[];
@@ -101,23 +93,15 @@ export interface Nominee {
     district: District;
 }
 
-export interface NomineeResponse {
+export interface BaseResponse<T> {
     count: number;
     pages: number;
     currentPage: number;
-    data: Nominee[];
+    data: T[];
 }
 
-export interface InstitutionResponse {
-    count: number;
-    pages: number;
-    currentPage: number;
-    data: Institution[];
-}
-
-export interface CommentResponse {
-    count: number;
-    pages: number;
-    currentPage: number;
-    data: Comment[] | InstitutionComment[];
-}
+export type NomineeResponse = BaseResponse<Nominee>;
+export type InstitutionResponse = BaseResponse<Institution>;
+export type CommentResponse = BaseResponse<Comment>;
+export type DistrictResponse = BaseResponse<District>;
+export type PositionResponse = BaseResponse<Position>;

@@ -1,4 +1,5 @@
-// utils/pagination.ts
+import { Prisma } from '@prisma/client';
+
 type PaginationParams = {
   page?: number;
   limit?: number;
@@ -11,33 +12,46 @@ type PaginationResult<T> = {
   data: T[];
 };
 
+// Define proper types for Prisma query arguments
+type PrismaQueryArgs = {
+  where?: Record<string, unknown>;
+  skip?: number;
+  take?: number;
+  include?: Record<string, unknown>;
+  orderBy?: Record<string, Prisma.SortOrder>;
+};
+
+// Define the structure that all Prisma models share
+interface PrismaDelegate<T> {
+  findMany(args: PrismaQueryArgs): Promise<T[]>;
+  count(args: { where: Record<string, unknown> }): Promise<number>;
+}
+
 export async function paginate<T>(
-  model: any, // Prisma model
+  model: PrismaDelegate<T>,
   params: PaginationParams,
-  filter: object = {},
-  include: object = {}, // Include parameter for related data
-  orderBy: object = { createdAt: 'desc' } // Default ordering by createdAt
+  queryParams: Omit<PrismaQueryArgs, 'skip' | 'take'> = {}
 ): Promise<PaginationResult<T>> {
   const { page = 1, limit = 10 } = params;
+  const { where = {}, include = {}, orderBy = { createdAt: 'desc' } } = queryParams;
 
   const offset = (page - 1) * limit;
 
   const [data, count] = await Promise.all([
     model.findMany({
-      where: filter,
+      where,
       skip: offset,
       take: limit,
-      include, // Include related data
+      include,
       orderBy,
     }),
-    model.count({ where: filter }),
+    model.count({ where }),
   ]);
 
   return {
-  count,
-  pages: Math.ceil(count / limit),
-  currentPage: page,
-  data,
-
+    count,
+    pages: Math.ceil(count / limit),
+    currentPage: page,
+    data,
   };
 }
