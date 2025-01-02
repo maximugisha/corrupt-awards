@@ -4,6 +4,7 @@ import { RatingCategory } from "@/types/interfaces";
 import { useRouter } from "next/navigation";
 // import { PlusCircle } from 'lucide-react';
 import { uploadImage } from "@/services/uploadService";
+const token = localStorage.getItem('token');
 
 interface NewInstitution {
   name: string;
@@ -36,7 +37,11 @@ export default function CreateInstitutionPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const categoriesRes = await fetch("/api/institution-rating-categories/");
+        const categoriesRes = await fetch("/api/institution-rating-categories/", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const categoriesData = await categoriesRes.json();
         setCategories(categoriesData.data);
       } catch (error) {
@@ -61,7 +66,7 @@ export default function CreateInstitutionPage() {
     try {
       const response = await fetch('/api/institutions/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(newInstitution),
       });
 

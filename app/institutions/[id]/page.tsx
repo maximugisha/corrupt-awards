@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import React, { useEffect, useState } from "react";
 import { Institution } from "@/types/interfaces";
 import { useParams } from 'next/navigation';
-
+import { getUser } from "@/lib/auth";
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function InstitutionPage() {
@@ -14,11 +14,18 @@ export default function InstitutionPage() {
  const [institution, setInstitution] = useState<Institution | null>(null);
  const [error, setError] = useState<string | null>(null);
 
- useEffect(() => {
+  const token = localStorage.getItem('token');
+
+
+  useEffect(() => {
    if (id) {
      const fetchInstitution = async () => {
        try {
-         const response = await fetch(`${baseUrl}institutions/${id}/`);
+         const response = await fetch(`${baseUrl}institutions/${id}/`, {
+           headers: {
+             'Authorization': `Bearer ${token}`
+           }
+         });
          if (!response.ok) {
            throw new Error("Failed to fetch institution data.");
          }

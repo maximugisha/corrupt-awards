@@ -22,6 +22,7 @@ export async function verifyToken(token: string): Promise<AuthTokenPayload | nul
 
 export async function getUser() {
   const token = (await cookies()).get('token')?.value;
+  console.log("token token", token)
 
   if (!token) return null;
 

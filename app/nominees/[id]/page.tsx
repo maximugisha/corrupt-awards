@@ -7,20 +7,23 @@ import { Nominee } from "@/types/interfaces";
 import { Avatar } from "@/components/ui/avatar";
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const token = localStorage.getItem('token');
 export default function NomineePage() {
- const params = useParams();
+  const params = useParams();
  const id = params.id as string;
  const [nominee, setNominee] = useState<Nominee | null>(null);
  const [error, setError] = useState<string | null>(null);
-
  useEffect(() => {
    if (id) {
      const fetchNominee = async () => {
        try {
-         const response = await fetch(`${baseUrl}nominees/${id}/`);
+         const response = await fetch(`${baseUrl}nominees/${id}/`, {
+           headers: {
+             'Authorization': `Bearer ${token}`
+           }
+         });
          if (!response.ok) {
            throw new Error("Failed to fetch nominee data.");
          }
@@ -127,10 +130,10 @@ export default function NomineePage() {
                {nominee.rating.length?.toLocaleString() || 0} votes
              </p>
            </div>
-           
+
            {/* Rate Button */}
            <div className="flex justify-end">
-             <a 
+             <a
                href={`/nominees/${nominee.id}/rate`}
                className="bg-cyan-700 text-white py-2 px-4 rounded-md hover:bg-cyan-800 transition"
              >

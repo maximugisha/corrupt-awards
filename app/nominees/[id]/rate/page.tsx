@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { RatingCategory } from "@/types/interfaces";
 import { useRouter } from "next/navigation";
+const token = localStorage.getItem('token');
 
 export default function RateNomineePage({
   params,
@@ -26,7 +27,11 @@ export default function RateNomineePage({
 
         // Fetch categories and nominee details once params are resolved
         const fetchCategories = async () => {
-          const response = await fetch("/api/rating-categories/");
+          const response = await fetch("/api/rating-categories/", {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
           if (!response.ok) {
             throw new Error("Failed to fetch categories.");
           }
@@ -35,7 +40,11 @@ export default function RateNomineePage({
         };
 
         const fetchNomineeDetails = async () => {
-          const response = await fetch(`/api/nominees/${parsedId}`);
+          const response = await fetch(`/api/nominees/${parsedId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
           if (!response.ok) {
             throw new Error("Failed to fetch nominee details.");
           }
@@ -82,7 +91,7 @@ export default function RateNomineePage({
     const response = await fetch(`/api/nominees/${nomineeId}/rate/`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json", 'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(payload),
     });
