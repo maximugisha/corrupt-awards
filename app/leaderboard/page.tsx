@@ -36,6 +36,9 @@ interface Institution {
   image: string;
 }
 
+const token = localStorage.getItem('token');
+
+
 const LeaderboardPage = () => {
   const [activeTab, setActiveTab] = useState("officials");
   const [nominees, setNominees] = useState<Nominee[]>([]);
@@ -45,8 +48,16 @@ const LeaderboardPage = () => {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/leaderboard/nominees/").then((res) => res.json()),
-      fetch("/api/leaderboard/institutions/").then((res) => res.json()),
+      fetch("/api/leaderboard/nominees/", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then((res) => res.json()),
+      fetch("/api/leaderboard/institutions/", {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }).then((res) => res.json()),
     ]).then(([nomineesData, institutionsData]) => {
       setNominees(nomineesData);
       setInstitutions(institutionsData);

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Nominee, NomineeResponse } from "@/types/interfaces";
 import { Input } from "@/components/ui/input";
 import { NomineeCard } from "./components/card";
+const token = localStorage.getItem('token');
+
 
 export default function NomineeList() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -36,7 +38,11 @@ export default function NomineeList() {
   }, []);
 
   const fetchNominees = async (): Promise<NomineeResponse> => {
-    const response = await fetch(`/api/nominees/`);
+    const response = await fetch(`/api/nominees/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.json();
   };
 

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Avatar } from "@/components/ui/avatar";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+const token = localStorage.getItem('token');
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -25,10 +26,16 @@ const InstitutionComments: React.FC<{ institutionId: number }> = ({ institutionI
   const [newComment, setNewComment] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await fetch(`/api/comments/?institutionId=${institutionId}`);
+        const response = await fetch(`/api/comments/?institutionId=${institutionId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+
+      });
         const data = await response.json();
         setComments(data || []);
       } catch (error) {
@@ -47,7 +54,7 @@ const InstitutionComments: React.FC<{ institutionId: number }> = ({ institutionI
     try {
       const response = await fetch("/api/comments/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           institutionId,
           content: newComment,
@@ -148,7 +155,11 @@ const InstitutionList: React.FC = () => {
   }, []);
 
   const fetchInstitutions = async (): Promise<InstitutionResponse> => {
-    const response = await fetch(`${baseUrl}institutions/`);
+    const response = await fetch(`${baseUrl}institutions/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.json();
   };
 

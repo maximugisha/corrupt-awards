@@ -1,12 +1,12 @@
 "use client";
 
-import { AuthGuard } from '@/components/auth-guard';
+// import { AuthGuard } from '@/components/auth-guard';
 import NomineeList from './list';
 
 export default function NomineesPage() {
   return (
-    <AuthGuard>
+    // <AuthGuard>
       <NomineeList />
-    </AuthGuard>
+    // </AuthGuard>
   );
 }
