@@ -3,11 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-
   "prisma": {
     "seed": "ts-node --esm prisma/seed.js"
   },
-
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -24,6 +22,7 @@
     "@faker-js/faker": "^8.3.1",
     "@prisma/client": "^5.7.1",
     "@radix-ui/react-avatar": "^1.0.4",
+    "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.2.4",
@@ -37,6 +36,7 @@
     "prisma": "^5.7.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "recharts": "^2.15.0",
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
