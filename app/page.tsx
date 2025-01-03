@@ -55,29 +55,10 @@ export default function Home() {
 
   useEffect(() => {
     const fetchTopNominees = async () => {
-      try {
-        const response = await fetch('/api/leaderboard/nominees');
-        const data = await response.json();
-        
-        // Filter for active nominees and sort by rating
-        const sortedNominees = data.sort((a: Nominee, b: Nominee) => {
-          const aAvg = a.rating.reduce((sum, r) => sum + r.score, 0) / (a.rating.length || 1);
-          const bAvg = b.rating.reduce((sum, r) => sum + r.score, 0) / (b.rating.length || 1);
-          return bAvg - aAvg;
-        });
-        
-        setTopNominees(sortedNominees);
-      } catch (error) {
-        console.error('Error fetching top nominees:', error);
-      }
+      const response = await fetch('/api/leaderboard/nominees');
+      const data = await response.json();
+      setTopNominees(data);
     };
-  
-    fetchTopNominees();
-    const interval = setInterval(fetchTopNominees, 30000);
-  
-    return () => clearInterval(interval);
-  
-  
 
     const fetchTopInstitutions = async () => {
       const response = await fetch('/api/leaderboard/institutions');
