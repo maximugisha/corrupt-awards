@@ -1,45 +1,52 @@
 // src/types/interfaces.ts
+
+
+// Base interfaces for optional relationships
+
+interface BaseUser {
+    name: string;
+    image?: string;
+}
+
 export interface Rating {
     id: number;
-    userId: number;
-    nomineeId: number;
-    ratingCategoryId: number;
     score: number;
     severity: number;
     evidence: string | null;
     createdAt: string;
-    ratingCategory: RatingCategory;
-}
+    user?: BaseUser;
+    ratingCategory: {
+      name: string;
+      icon: string;
+    };
+  }
+
 
 export interface Comment {
     id: number;
     userId: number;
-    nomineeId: number;
-    institutionId: number;
+    nomineeId?: number;
+    institutionId?: number;
     content: string;
     createdAt: string;
-    user: {
-        name: string;
-        image?: string;
-    };
+    user: BaseUser;
 }
-
 export interface InstitutionComment {
-    id: number;
-    userId: number;
-    institutionId: number;
-    content: string;
-    createdAt: string;
-    user: {
-        name: string;
-        avatar?: string;
-    };
+  id: number;
+  userId: number;
+  institutionId: number;
+  content: string;
+  createdAt: string;
+  user: {
+    name: string;
+    avatar?: string;
+  };
 }
 
 export interface InstitutionRating {
     id: number;
     userId: number;
-    nomineeId: number;
+    institutionId: number;
     ratingCategoryId: number;
     score: number;
     severity: number;
@@ -62,37 +69,41 @@ export interface RatingCategory {
 export interface Position {
     id: number;
     name: string;
+    status: boolean;
     createdAt: string;
+    nominees?: Nominee[];
 }
 
 export interface Institution {
-    id: number;
-    image?: string;
-    name: string;
-    status: boolean;
-    rating: InstitutionRating[];
-    comments?: InstitutionComment[];
-    avatar?: string;
-    createdAt: string;
+  id: number;
+  image?: string;
+  name: string;
+  status: boolean;
+  nominees?: Nominee[];
+  rating: InstitutionRating[];
+  createdAt: string;
+  comments?: InstitutionComment[];
+  avatar?: string;
 }
 
 export interface District {
-  id: number;
-  name: string;
-  region: string;
-  createdAt: string;
+    id: number;
+    name: string;
+    region: string;
+    status: boolean;
+    createdAt: string;
+    nominees?: Nominee[];
 }
 
 export interface Nominee {
-    image?: string;
     id: number;
     name: string;
+    image?: string;
     positionId: number;
     institutionId: number;
     districtId: number;
     status: boolean;
     evidence: string | null;
-    avatar?: string;
     comments?: Comment[];
     createdAt: string;
     rating: Rating[];
@@ -101,57 +112,44 @@ export interface Nominee {
     district: District;
 }
 
-export interface NomineeResponse {
-    count: number;
-    pages: number;
-    currentPage: number;
-    data: Nominee[];
-}
-
-export interface InstitutionResponse {
-    count: number;
-    pages: number;
-    currentPage: number;
-    data: Institution[];
-}
-
-export interface CommentResponse {
-    count: number;
-    pages: number;
-    currentPage: number;
-    data: Comment[] | InstitutionComment[];
-}
-export interface HRating {
-    score: number;
-    ratingCategory: {
-        name: string;
-        weight: number;
-    };
-}
-
 export interface HNominee {
-    id: number;
+  id: number;
+  name: string;
+  position: {
     name: string;
-    position: {
-        name: string;
-    };
-    institution: {
-        name: string;
-    };
-    rating: Rating[];
+  };
+  institution: {
+    name: string;
+  };
+  rating: Rating[];
 }
 
 export interface HInstitution {
-    id: number;
-    name: string;
-    rating: Rating[];
+  id: number;
+  name: string;
+  rating: Rating[];
 }
 
 export interface HStatistics {
-    totalInstitutions: number;
-    totalNominees: number;
-    totalInstitutionRatings: number;
-    totalNomineeRatings: number;
-    totalUsers: number;
-    totalRatings: number;
+  totalInstitutions: number;
+  totalNominees: number;
+  totalInstitutionRatings: number;
+  totalNomineeRatings: number;
+  totalUsers: number;
+  totalRatings: number;
 }
+
+
+// Response types with proper generics
+export interface BaseResponse<T> {
+    count: number;
+    pages: number;
+    currentPage: number;
+    data: T[];
+}
+
+export type NomineeResponse = BaseResponse<Nominee>;
+export type InstitutionResponse = BaseResponse<Institution>;
+export type CommentResponse = BaseResponse<Comment>;
+export type DistrictResponse = BaseResponse<District>;
+export type PositionResponse = BaseResponse<Position>;

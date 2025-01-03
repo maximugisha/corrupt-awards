@@ -3,6 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { AuthGuard } from '@/components/auth-guard';
 
 const AdminDashboard: React.FC = () => {
   const models = [
@@ -18,6 +19,7 @@ const AdminDashboard: React.FC = () => {
   ];
 
   return (
+    <AuthGuard>
     <div className="container mx-auto p-4">
       <h1 className=" py-2xl text-black font-bold mb-4">Admin Dashboard</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -31,6 +33,7 @@ const AdminDashboard: React.FC = () => {
         ))}
       </div>
     </div>
+    </AuthGuard>
   );
 };
 

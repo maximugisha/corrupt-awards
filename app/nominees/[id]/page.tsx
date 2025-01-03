@@ -1,145 +1,246 @@
+// app/nominees/[id]/page.tsx
 "use client";
 
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import React, { useEffect, useState } from "react";
-import { Nominee } from "@/types/interfaces";
 import { Avatar } from "@/components/ui/avatar";
-import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import RatingComponent from "@/components/ratings/RatingComponent";
+import StatsComponent from "@/components/ratings/StatsComponent";
+import {RatingList} from "@/components/ratings/RatingList";
+import {CommentSection} from "@/components/ratings/CommentSection";
+import { useToast } from "@/components/ui/use-toast";
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+interface Rating {
+  id: number;
+  score: number;
+  severity: number;
+  evidence: string;
+  createdAt: string;
+  user: {
+    name: string;
+    image?: string;
+  };
+  ratingCategory: {
+    name: string;
+    icon: string;
+  };
+}
+
+interface Comment {
+  id: number;
+  content: string;
+  createdAt: string;
+  user: {
+    name: string;
+    image?: string;
+  };
+}
+
+interface Nominee {
+  id: number;
+  name: string;
+  image?: string;
+  position: {
+    name: string;
+  };
+  institution: {
+    name: string;
+  };
+  district: {
+    name: string;
+  };
+  status: boolean;
+  evidence?: string;
+  rating: Rating[];
+  comments: Comment[];
+}
+
+interface RatingSubmission {
+  ratingCategoryId: number;
+  score: number;
+  severity: number;
+  evidence: string;
+}
 
 export default function NomineePage() {
- const params = useParams();
- const id = params.id as string;
- const [nominee, setNominee] = useState<Nominee | null>(null);
- const [error, setError] = useState<string | null>(null);
+  const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [nominee, setNominee] = useState<Nominee | null>(null);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
- useEffect(() => {
-   if (id) {
-     const fetchNominee = async () => {
-       try {
-         const response = await fetch(`${baseUrl}nominees/${id}/`);
-         if (!response.ok) {
-           throw new Error("Failed to fetch nominee data.");
-         }
-         const data = await response.json();
-         setNominee(data);
-       } catch (err) {
-         if (err instanceof Error) {
-           setError(err.message);
-         } else {
-           setError("An unknown error occurred");
-         }
-       }
-     };
+  const fetchData = async () => {
+    try {
+      // Fetch nominee data
+      const nomineeRes = await fetch(`/api/nominees/${params.id}`);
+      if (!nomineeRes.ok) throw new Error('Failed to fetch nominee');
+      const nomineeData = await nomineeRes.json();
+      
+      // Fetch rating categories
+      const categoriesRes = await fetch('/api/rating-categories/');
+      if (!categoriesRes.ok) throw new Error('Failed to fetch categories');
+      const categoriesData = await categoriesRes.json();
+      
+      setNominee(nomineeData);
+      setCategories(categoriesData.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load nominee data"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-     fetchNominee();
-   }
- }, [id]);
+  useEffect(() => {
+    fetchData();
+  }, [params.id]);
 
- if (error) {
-   return (
-     <div className="max-w-7xl mx-auto px-4 py-8">
-       <div className="bg-red-100 text-red-800 rounded-lg p-4">
-         <p>Error: {error}</p>
-       </div>
-     </div>
-   );
- }
+  const handleRatingSubmit = async (ratings: RatingSubmission[]) => {
+    try {
+      const response = await fetch(`/api/nominees/${params.id}/rate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ratings }),
+      });
 
- if (!nominee) {
-   return (
-     <div className="max-w-7xl mx-auto px-4 py-8">
-       <div className="bg-white rounded-lg shadow-lg p-6">
-         <h1 className="text-2xl text-gray-500">Loading...</h1>
-       </div>
-     </div>
-   );
- }
+      if (!response.ok) throw new Error('Failed to submit rating');
 
- const weightedScore = nominee.rating.reduce((acc, curr) => acc + curr.score, 0) / nominee.rating.length;
+      toast({
+        title: "Success",
+        description: "Rating submitted successfully"
+      });
 
- return (
-   <div className="max-w-7xl mx-auto px-4 py-8">
-     <Card>
-       <CardHeader>
-         <div className="flex justify-between items-start">
-           <div>
-             <Avatar className="w-24 h-24 mb-4">
-               <Image
-                 src={nominee.image ? nominee.image : "/npp.png"}
-                 alt={nominee.name}
-                 width={96}
-                 height={96}
-               />
-             </Avatar>
-             <h1 className="text-3xl text-cyan-900 font-bold">{nominee.name}</h1>
-             <p className="text-xl text-gray-600">{nominee.position.name}</p>
-             <p className="text-gray-500">{nominee.institution.name}</p>
-           </div>
-           <div>
-             <Badge variant={nominee.status ? "success" : "warning"}>
-               {nominee.status ? "APPROVED" : "PENDING"}
-             </Badge>
-             <div className="mt-2 text-right">
-               <span className="text-2xl font-bold text-blue-600">
-                 {weightedScore.toFixed(2)}
-               </span>
-               <span className="text-gray-500">/5.0</span>
-             </div>
-           </div>
-         </div>
-       </CardHeader>
-       <CardContent>
-         <div className="space-y-6">
-           <div>
-             <h2 className="text-xl font-bold text-gray-500 mb-4">Evidence</h2>
-             <p className="text-gray-600">{nominee.evidence || "No Submitted Evidence available."}</p>
-           </div>
+      // Refresh nominee data
+      fetchData();
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to submit rating"
+      });
+    }
+  };
 
-           <div>
-             <h2 className="text-xl text-gray-500 font-bold mb-4">Corruption Metrics</h2>
-             <div className="grid gap-4 md:grid-cols-2">
-               {nominee.rating.map((rating) => (
-                 <div key={rating.id} className="bg-gray-50 p-4 rounded-lg">
-                   <div className="flex justify-between items-center mb-2">
-                     <span className="font-medium text-gray-500">{rating.ratingCategory.name}</span>
-                     <span className="text-blue-600 font-bold">
-                       {rating.score.toFixed(1)}/5.0
-                     </span>
-                   </div>
-                   <div className="w-full bg-gray-200 rounded-full h-2">
-                     <div
-                       className="bg-blue-600 rounded-full h-2"
-                       style={{ width: `${(rating.score / 5) * 100}%` }}
-                     />
-                   </div>
-                 </div>
-               ))}
-             </div>
-           </div>
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-gray-200 rounded-lg"></div>
+          <div className="h-64 bg-gray-200 rounded-lg"></div>
+        </div>
+      </div>
+    );
+  }
 
-           <div>
-             <h2 className="text-xl text-gray-500 font-bold mb-4">Vote Count</h2>
-             <p className="text-2xl font-bold text-gray-900">
-               {nominee.rating.length?.toLocaleString() || 0} votes
-             </p>
-           </div>
-           
-           {/* Rate Button */}
-           <div className="flex justify-end">
-             <a 
-               href={`/nominees/${nominee.id}/rate`}
-               className="bg-cyan-700 text-white py-2 px-4 rounded-md hover:bg-cyan-800 transition"
-             >
-               Rate
-             </a>
-           </div>
-         </div>
-       </CardContent>
-     </Card>
-   </div>
- );
+  if (!nominee) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-red-100 text-red-800 p-4 rounded-lg">
+          Nominee not found
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Nominee Profile Card */}
+      <Card className="mb-8">
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div className="flex items-start space-x-4">
+            <Avatar className="w-24 h-24">
+              <Image
+                src={nominee.image || "/placeholder.png"}
+                alt={nominee.name}
+                width={96}
+                height={96}
+                className="object-cover"
+              />
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">{nominee.name}</h1>
+              <p className="text-xl text-gray-600">{nominee.position.name}</p>
+              <p className="text-gray-500">{nominee.institution.name}</p>
+              <Badge variant={nominee.status ? "success" : "warning"}>
+                {nominee.status ? "Active" : "Inactive"}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {nominee.evidence && (
+            <div className="mt-4">
+              <h2 className="text-xl font-bold text-gray-900">Evidence</h2>
+              <p className="text-gray-600">{nominee.evidence}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Statistics Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Rating Statistics</h2>
+        <StatsComponent
+          ratings={nominee.rating}
+          categories={categories}
+          type="nominee"
+        />
+      </div>
+
+      {/* Rating Form */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Submit Rating</h2>
+        <RatingComponent
+          categories={categories}
+          onSubmitRating={handleRatingSubmit}
+          type="nominee"
+        />
+      </div>
+
+      {/* Recent Ratings */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Recent Ratings</h2>
+        <RatingList ratings={nominee.rating} />
+      </div>
+
+      {/* Comments Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Comments</h2>
+        <CommentSection
+          comments={nominee.comments}
+          onAddComment={async (content) => {
+            const response = await fetch(`/api/comments`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                content,
+                userId: 1, // Replace with actual user ID from auth
+                nomineeId: nominee.id,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to add comment');
+            }
+
+            // Refresh the data
+            await fetchData();
+          }}
+        />
+      </div>
+    </div>
+  );
 }
