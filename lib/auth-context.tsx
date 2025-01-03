@@ -1,45 +1,50 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
+  login: (token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Check if token exists and is valid by making a request to a protected endpoint
-        const response = await fetch('/api/auth/verify', {
-          credentials: 'include' // Important for sending cookies
-        });
-        setIsAuthenticated(response.status === 200);
-      } catch (error) {
-        setIsAuthenticated(false);
-      }
+    const checkAuth = () => {
+      const hasToken = document.cookie.includes('token=');
+      setIsAuthenticated(hasToken);
     };
 
     checkAuth();
-
-    // Listen for storage events to sync auth state across tabs
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'auth') {
-        checkAuth();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    // Check auth state when component mounts and when storage changes
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
+  const login = (token: string) => {
+    setIsAuthenticated(true);
+    // Get the intended URL from localStorage or default to /nominees
+    const intendedUrl = localStorage.getItem('intendedUrl') || '/nominees';
+    localStorage.removeItem('intendedUrl'); // Clear the stored URL
+    router.push(intendedUrl);
+  };
+
+  // Store the current path when redirecting to login
+  useEffect(() => {
+    if (!isAuthenticated && pathname !== '/login' && pathname !== '/register') {
+      localStorage.setItem('intendedUrl', pathname);
+    }
+  }, [isAuthenticated, pathname]);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, login }}>
       {children}
     </AuthContext.Provider>
   );

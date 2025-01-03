@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Avatar } from "@/components/ui/avatar";
+import { AuthGuard } from '@/components/auth-guard';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -70,6 +71,7 @@ const InstitutionComments: React.FC<{ institutionId: number }> = ({ institutionI
   }
 
   return (
+    <AuthGuard>
     <div className="space-y-3">
       <h3 className="font-medium text-green-400">Comments</h3>
       {comments.length > 0 ? (
@@ -114,6 +116,7 @@ const InstitutionComments: React.FC<{ institutionId: number }> = ({ institutionI
         </Button>
       </div>
     </div>
+    </AuthGuard>
   );
 };
 

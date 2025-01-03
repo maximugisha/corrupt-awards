@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { LogIn } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,8 +36,8 @@ export default function LoginPage() {
         throw new Error(error.error);
       }
 
-      router.push('/');
-      router.refresh();
+      const { token } = await response.json();
+      login(token); // Use the login function from context
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Something went wrong');
     } finally {
@@ -97,7 +97,7 @@ export default function LoginPage() {
         </form>
 
         <div className="text-center text-sm">
-          Don't have an account?{' '}
+          Don&#39;t have an account?{' '}
           <Link href="/register" className="text-primary hover:underline">
             Register
           </Link>

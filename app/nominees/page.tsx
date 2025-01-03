@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import { AuthGuard } from '@/components/auth-guard';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -78,6 +79,7 @@ const NomineeComments: React.FC<{ nomineeId: number }> = ({ nomineeId }) => {
   }
 
   return (
+    <AuthGuard>
     <div className="space-y-3">
       <h3 className="font-medium text-green-400">Comments</h3>
       {comments.length > 0 ? (
@@ -125,6 +127,7 @@ const NomineeComments: React.FC<{ nomineeId: number }> = ({ nomineeId }) => {
         </Button>
       </div>
     </div>
+    </AuthGuard>
   );
 };
 

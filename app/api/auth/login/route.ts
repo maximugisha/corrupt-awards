@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
         email: user.email,
         image: user.image,
       },
+      token, // Return token to client for context update
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
