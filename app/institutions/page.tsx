@@ -7,6 +7,7 @@ import { InstitutionFilter } from "./components/InstitutionFilter";
 import { InstitutionSearch } from "./components/InstitutionSearch";
 import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/use-toast";
+import { AuthGuard } from "@/components/auth-guard";
 
 interface Institution {
   id: number;
@@ -62,6 +63,7 @@ export default function InstitutionsPage() {
   };
 
   return (
+    <AuthGuard>
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Institutions Directory</h1>
 
@@ -111,5 +113,6 @@ export default function InstitutionsPage() {
         </div>
       </div>
     </div>
+    </AuthGuard>
   );
 }

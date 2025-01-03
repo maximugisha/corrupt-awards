@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import Image from "next/image";
 import Link from "next/link";
 import { Nominee, NomineeResponse, Rating } from "@/types/interfaces";
+import { AuthGuard } from "@/components/auth-guard";
 
 export default function NomineesPage() {
   const [nominees, setNominees] = useState<Nominee[]>([]);
@@ -149,6 +150,7 @@ export default function NomineesPage() {
   );
 
   return (
+    <AuthGuard>
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
@@ -198,5 +200,6 @@ export default function NomineesPage() {
       {/* Pagination */}
       {!loading && totalPages > 1 && renderPagination()}
     </div>
+    </AuthGuard>
   );
 }
