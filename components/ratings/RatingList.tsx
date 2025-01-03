@@ -3,7 +3,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
-import { Rating } from "@/types/interfaces";  // Import the global Rating interface
+import { Rating } from "@/types/interfaces"; // Import the global Rating interface
 
 interface RatingListProps {
   ratings: Rating[];
@@ -23,7 +23,7 @@ export function RatingList({ ratings }: RatingListProps) {
                 height={40}
               />
             </Avatar>
-            
+
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div>
@@ -31,12 +31,14 @@ export function RatingList({ ratings }: RatingListProps) {
                     {rating.user?.name || "Anonymous User"}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {formatDistanceToNow(new Date(rating.createdAt), { 
-                      addSuffix: true 
-                    })}
+                    {rating.createdAt
+                      ? formatDistanceToNow(new Date(rating.createdAt), {
+                          addSuffix: true,
+                        })
+                      : "Unknown date"}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <span className="text-2xl">
                     {rating.ratingCategory?.icon || "⭐"}
@@ -51,7 +53,7 @@ export function RatingList({ ratings }: RatingListProps) {
                   </div>
                 </div>
               </div>
-              
+
               {rating.evidence && (
                 <p className="mt-2 text-gray-700">{rating.evidence}</p>
               )}
