@@ -121,3 +121,37 @@ export interface CommentResponse {
     currentPage: number;
     data: Comment[] | InstitutionComment[];
 }
+export interface HRating {
+    score: number;
+    ratingCategory: {
+        name: string;
+        weight: number;
+    };
+}
+
+export interface HNominee {
+    id: number;
+    name: string;
+    position: {
+        name: string;
+    };
+    institution: {
+        name: string;
+    };
+    rating: Rating[];
+}
+
+export interface HInstitution {
+    id: number;
+    name: string;
+    rating: Rating[];
+}
+
+export interface HStatistics {
+    totalInstitutions: number;
+    totalNominees: number;
+    totalInstitutionRatings: number;
+    totalNomineeRatings: number;
+    totalUsers: number;
+    totalRatings: number;
+}
