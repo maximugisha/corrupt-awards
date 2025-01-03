@@ -1,47 +1,107 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import React, { useEffect, useState } from "react";
-import { Institution } from "@/types/interfaces";
-import { useParams } from 'next/navigation';
+import { Avatar } from "@/components/ui/avatar";
+import RatingComponent from "@/components/ratings/RatingComponent";
+import { RatingList } from "@/components/ratings/RatingList";
+import { CommentSection } from "@/components/ratings/CommentSection";
+import StatsComponent from "@/components/ratings/StatsComponent";
+import { useToast } from "@/components/ui/use-toast";
+import Link from "next/link";
+import { ChevronRight, Users } from "lucide-react";
+import { Rating, Comment, Nominee } from '@/types/interfaces';
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+interface RatingSubmission {
+ categoryId: number;
+ score: number;
+ severity: number;
+ evidence: string;
+}
+
+interface InstitutionDetails {
+ id: number;
+ name: string;
+ image?: string;
+ status: boolean;
+ nominees?: Nominee[];
+ rating: Rating[];
+ comments?: Comment[];
+ createdAt: string;
+}
 
 export default function InstitutionPage() {
  const params = useParams();
- const id = params.id as string;
- const [institution, setInstitution] = useState<Institution | null>(null);
- const [error, setError] = useState<string | null>(null);
+ const { toast } = useToast();
+ const [institution, setInstitution] = useState<InstitutionDetails | null>(null);
+ const [categories, setCategories] = useState([]);
+ const [loading, setLoading] = useState(true);
+
+ const fetchData = useCallback(async () => {
+   try {
+     const institutionRes = await fetch(`/api/institutions/${params.id}`);
+     if (!institutionRes.ok) throw new Error('Failed to fetch institution');
+     const institutionData = await institutionRes.json();
+     
+     const categoriesRes = await fetch('/api/institution-rating-categories/');
+     if (!categoriesRes.ok) throw new Error('Failed to fetch categories');
+     const categoriesData = await categoriesRes.json();
+     
+     setInstitution(institutionData);
+     setCategories(categoriesData.data);
+   } catch (error) {
+     console.error('Error fetching data:', error);
+     toast({
+       variant: "destructive",
+       title: "Error",
+       description: "Failed to load institution data"
+     });
+   } finally {
+     setLoading(false);
+   }
+ }, [params.id, toast]);
 
  useEffect(() => {
-   if (id) {
-     const fetchInstitution = async () => {
-       try {
-         const response = await fetch(`${baseUrl}institutions/${id}/`);
-         if (!response.ok) {
-           throw new Error("Failed to fetch institution data.");
-         }
-         const data = await response.json();
-         setInstitution(data);
-       } catch (err) {
-         if (err instanceof Error) {
-           setError(err.message);
-         } else {
-           setError("An unknown error occurred");
-         }
-       }
-     };
+   fetchData();
+ }, [fetchData]);
 
-     fetchInstitution();
+ const handleRatingSubmit = async (ratings: RatingSubmission[]) => {
+   try {
+     const response = await fetch(`/api/institutions/${params.id}/rate`, {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ ratings }),
+     });
+
+     if (!response.ok) throw new Error('Failed to submit rating');
+
+     toast({
+       title: "Success",
+       description: "Rating submitted successfully"
+     });
+
+     fetchData();
+   } catch (error) {
+     console.error('Error submitting rating:', error);
+     toast({
+       variant: "destructive",
+       title: "Error",
+       description: "Failed to submit rating"
+     });
    }
- }, [id]);
+ };
 
- if (error) {
+ if (loading) {
    return (
      <div className="max-w-7xl mx-auto px-4 py-8">
-       <div className="bg-red-100 text-red-800 rounded-lg p-4">
-         <p>Error: {error}</p>
+       <div className="animate-pulse space-y-4">
+         <div className="h-32 bg-gray-200 rounded-lg"></div>
+         <div className="h-64 bg-gray-200 rounded-lg"></div>
        </div>
      </div>
    );
@@ -50,97 +110,138 @@ export default function InstitutionPage() {
  if (!institution) {
    return (
      <div className="max-w-7xl mx-auto px-4 py-8">
-       <div className="bg-white rounded-lg shadow-lg p-6">
-         <h1 className="text-2xl text-gray-500">Loading...</h1>
+       <div className="bg-red-100 text-red-800 p-4 rounded-lg">
+         Institution not found
        </div>
      </div>
    );
  }
 
- const weightedScore =
-   institution.rating.reduce((acc, curr) => acc + curr.score, 0) /
-   institution.rating.length;
+ const averageRating = institution.rating.length 
+   ? institution.rating.reduce((acc, r) => acc + r.score, 0) / institution.rating.length
+   : 0;
 
  return (
    <div className="max-w-7xl mx-auto px-4 py-8">
-     <Card>
-       <CardHeader>
-         <div className="flex justify-between items-start">
+     <Card className="mb-8">
+       <CardHeader className="flex flex-row items-start justify-between">
+         <div className="flex items-start space-x-4">
+           <Avatar className="w-24 h-24">
+             <Image
+               src={institution.image || "/placeholder.png"}
+               alt={institution.name}
+               width={96}
+               height={96}
+               className="object-cover"
+             />
+           </Avatar>
            <div>
-             <h1 className="text-3xl text-cyan-900 font-bold">
-               {institution.name}
-             </h1>
-           </div>
-           <div>
-             <Badge variant={institution.status ? "success" : "warning"}>
-               {institution.status ? "APPROVED" : "PENDING"}
-             </Badge>
-             <div className="mt-2 text-right">
-               <span className="text-2xl font-bold text-blue-600">
-                 {weightedScore.toFixed(2)}
-               </span>
-               <span className="text-gray-500">/5.0</span>
+             <h1 className="text-3xl font-bold text-gray-900">{institution.name}</h1>
+             <div className="mt-2 space-y-1">
+               <Badge variant={institution.status ? "success" : "warning"}>
+                 {institution.status ? "Active" : "Inactive"}
+               </Badge>
+               <div className="flex items-center gap-2 text-gray-600">
+                 <Users className="w-4 h-4" />
+                 <span>{institution.nominees?.length || 0} Officials</span>
+               </div>
              </div>
            </div>
+         </div>
+         <div className="text-right">
+           <div className="text-3xl font-bold text-blue-600">
+             {averageRating.toFixed(1)}/5
+           </div>
+           <p className="text-gray-500">
+             {institution.rating.length} ratings
+           </p>
          </div>
        </CardHeader>
-       <CardContent>
-         <div className="space-y-6">
-           <div>
-             <h2 className="text-xl font-bold text-gray-500 mb-4">Evidence</h2>
-             {institution.rating && institution.rating.length > 0 ? (
-               <p className="text-gray-600">
-                 {institution.rating[0].evidence || "No Submitted Evidence available."}
-               </p>
-             ) : (
-               <p className="text-gray-600">No ratings available.</p>
-             )}
-           </div>
-
-           <div>
-             <h2 className="text-xl text-gray-500 font-bold mb-4">
-               Corruption Metrics
-             </h2>
-             <div className="grid gap-4 md:grid-cols-2">
-               {institution.rating.map((rating) => (
-                 <div key={rating.id} className="bg-gray-50 p-4 rounded-lg">
-                   <div className="flex justify-between items-center mb-2">
-                     <span className="font-medium text-gray-500">
-                       {rating.ratingCategory.name}
-                     </span>
-                     <span className="text-blue-600 font-bold">
-                       {rating.score.toFixed(1)}/5.0
-                     </span>
-                   </div>
-                   <div className="w-full bg-gray-200 rounded-full h-2">
-                     <div
-                       className="bg-blue-600 rounded-full h-2"
-                       style={{ width: `${(rating.score / 5) * 100}%` }}
-                     />
-                   </div>
-                 </div>
-               ))}
-             </div>
-           </div>
-
-           <div>
-             <h2 className="text-xl text-gray-500 font-bold mb-4">Vote Count</h2>
-             <p className="text-2xl font-bold text-gray-900">
-               {institution.rating.length?.toLocaleString() || 0} votes
-             </p>
-           </div>
-           
-           <div className="flex justify-end">
-             <a 
-               href={`/institutions/${institution.id}/rate`}
-               className="bg-cyan-700 text-white py-2 px-4 rounded-md hover:bg-cyan-800 transition"
-             >
-               Rate
-             </a>
-           </div>
-         </div>
-       </CardContent>
      </Card>
+
+     <div className="mb-8">
+       <h2 className="text-2xl font-bold text-gray-900 mb-4">Rating Statistics</h2>
+       <StatsComponent
+         ratings={institution.rating}
+         categories={categories}
+         type="institution"
+       />
+     </div>
+
+     {institution?.nominees && institution.nominees.length > 0 && (
+       <Card className="mb-8">
+         <CardContent className="pt-6">
+           <h2 className="text-xl font-bold text-gray-900 mb-4">Officials</h2>
+           <div className="space-y-4">
+             {institution.nominees.map((nominee) => (
+               <Link
+                 key={nominee.id}
+                 href={`/nominees/${nominee.id}`}
+                 className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50"
+               >
+                 <div>
+                   <h3 className="font-medium text-gray-900">{nominee.name}</h3>
+                   <p className="text-gray-500">
+                     {nominee.position?.name || 'Position not assigned'}
+                   </p>
+                 </div>
+                 <ChevronRight className="w-5 h-5 text-gray-400" />
+               </Link>
+             ))}
+           </div>
+         </CardContent>
+       </Card>
+     )}
+
+     <div className="mb-8">
+       <h2 className="text-2xl font-bold text-gray-900 mb-4">Submit Rating</h2>
+       <RatingComponent
+         categories={categories}
+         onSubmitRating={handleRatingSubmit}
+         type="institution"
+       />
+     </div>
+
+     <div className="mb-8">
+       <h2 className="text-2xl font-bold text-gray-900 mb-4">Recent Ratings</h2>
+       <RatingList ratings={institution.rating} />
+     </div>
+
+     <div className="mb-8">
+       <h2 className="text-2xl font-bold text-gray-900 mb-4">Comments</h2>
+       <CommentSection
+         comments={institution.comments}
+         onAddComment={async (content) => {
+           try {
+             const response = await fetch(`/api/comments`, {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json',
+               },
+               body: JSON.stringify({
+                 content,
+                 userId: 1,
+                 institutionId: institution.id,
+               }),
+             });
+
+             if (!response.ok) {
+               throw new Error('Failed to add comment');
+             }
+
+             const updatedInstitution = await fetch(`/api/institutions/${params.id}`);
+             const data = await updatedInstitution.json();
+             setInstitution(data);
+           } catch (error) {
+             toast({
+               variant: "destructive", 
+               title: "Error",
+               description: "Failed to add comment"
+             });
+           }
+         }}
+       />
+     </div>
    </div>
  );
 }

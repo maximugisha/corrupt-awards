@@ -1,260 +1,202 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { Nominee, NomineeResponse, Rating, Comment } from "@/types/interfaces";
-import { Avatar } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Avatar } from "@/components/ui/avatar";
 import Image from "next/image";
 import Link from "next/link";
-import { formatDistanceToNow, parseISO } from "date-fns";
+import { Nominee, NomineeResponse, Rating } from "@/types/interfaces";
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
-
-  if (now.getTime() - date.getTime() > oneWeekInMs) {
-    return formatDistanceToNow(parseISO(dateString), { addSuffix: true });
-  }
-
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  });
-};
-
-const NomineeComments: React.FC<{ nomineeId: number }> = ({ nomineeId }) => {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export default function NomineesPage() {
+  const [nominees, setNominees] = useState<Nominee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState<'recent' | 'rating'>('recent');
 
   useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const response = await fetch(`/api/comments/?nomineeId=${nomineeId}`);
-        const data = await response.json();
-        setComments(data || []);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const delayDebounce = setTimeout(() => {
+      fetchNominees();
+    }, 300);
 
-    fetchComments();
-  }, [nomineeId]);
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm, currentPage, sortBy]);
 
-  const handleAddComment = async () => {
-    if (!newComment.trim()) return;
-
+  const fetchNominees = async () => {
     try {
-      const response = await fetch("/api/comments/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nomineeId,
-          content: newComment,
-          userId: 1,
-        }),
+      const queryParams = new URLSearchParams({
+        search: searchTerm,
+        page: currentPage.toString(),
+        sort: sortBy,
       });
 
-      if (response.ok) {
-        const newCommentData = await response.json();
-        setComments((prev) => [...prev, newCommentData]);
-        setNewComment("");
+      const response = await fetch(`/api/nominees?${queryParams}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data: NomineeResponse = await response.json();
+
+      setNominees(data.data);
+      setTotalPages(data.pages);
+      setLoading(false);
     } catch (error) {
-      console.error("Error adding comment:", error);
+      console.error("Error fetching nominees:", error);
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
-    return <p>Loading comments...</p>;
-  }
+  const calculateAverageRating = (ratings: Rating[]) => {
+    if (!ratings || ratings.length === 0) return 0;
+    const sum = ratings.reduce((acc, rating) => acc + rating.score, 0);
+    return (sum / ratings.length).toFixed(1);
+  };
 
-  return (
-    <div className="space-y-3">
-      <h3 className="font-medium text-green-400">Comments</h3>
-      {comments.length > 0 ? (
-        comments.map((comment) => (
-          <div
-            key={comment.id}
-            className="bg-gray-50 p-3 rounded text-sm flex items-start gap-3"
-          >
-            <Avatar className="w-8 h-8">
-              <Image
-                src={comment.user?.image || "/npp.png"}
-                alt={comment.user?.name || "User"}
-                width={32}
-                height={32}
-              />
-            </Avatar>
-            <div>
-              <p className="text-gray-900 font-medium">
-                {comment.user?.name || "Unknown User"}
-              </p>
-              <p className="text-gray-900">{comment.content}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {formatDate(comment.createdAt)}
-              </p>
+  const renderSkeletonLoader = () => (
+    <div className="space-y-4">
+      {[...Array(3)].map((_, index) => (
+        <div key={index} className="animate-pulse">
+          <Card className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+              <div className="flex-1 space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
             </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-sm text-gray-500">No comments yet</p>
-      )}
-      <div className="flex gap-2">
-        <Input
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
-          className="flex-grow"
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              handleAddComment();
-            }
-          }}
-        />
-        <Button onClick={handleAddComment} variant="secondary">
-          Post
-        </Button>
-      </div>
+          </Card>
+        </div>
+      ))}
     </div>
   );
-};
 
-const NomineeList: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [nominees, setNominees] = useState<Nominee[]>([]);
-  const [meta, setMeta] = useState<{
-    count: number;
-    pages: number;
-    currentPage: number;
-  }>({ count: 0, pages: 0, currentPage: 0 });
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const renderNomineeCard = (nominee: Nominee) => (
+    <Link key={nominee.id} href={`/nominees/${nominee.id}`}>
+      <Card className="p-6 hover:shadow-lg transition-shadow">
+        <div className="flex items-start space-x-4">
+          <Avatar className="w-16 h-16">
+            <Image
+              src={nominee.image || "/npp.png"}
+              alt={nominee.name}
+              width={64}
+              height={64}
+            />
+          </Avatar>
+          
+          <div className="flex-1">
+            <div className="flex justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {nominee.name}
+                </h2>
+                <p className="text-gray-600">{nominee.position?.name || 'Position Not Specified'}</p>
+                <p className="text-gray-500">{nominee.institution?.name || 'Institution Not Specified'}</p>
+                <p className="text-sm text-gray-400">{nominee.district?.name || 'District Not Specified'}</p>
+              </div>
+              
+              <div className="text-right">
+                <div className="text-2xl font-bold text-blue-600">
+                  {calculateAverageRating(nominee.rating)}/5
+                </div>
+                <p className="text-sm text-gray-500">
+                  {nominee.rating?.length || 0} ratings
+                </p>
+              </div>
+            </div>
 
-  useEffect(() => {
-    const initialize = async () => {
-      try {
-        const nomineesData = await fetchNominees();
-        setNominees(nomineesData.data);
-        setMeta({
-          count: nomineesData.count,
-          pages: nomineesData.pages,
-          currentPage: nomineesData.currentPage,
-        });
-      } catch (error) {
-        console.error("Error initializing data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initialize();
-  }, []);
-
-  const fetchNominees = async (): Promise<NomineeResponse> => {
-    const response = await fetch(`/api/nominees/`);
-    return response.json();
-  };
-
-  const renderNomineeRating = (ratings: Rating[]) => {
-    if (!ratings?.length)
-      return <p className={"text-red-400"}>No ratings available</p>;
-
-    return ratings.slice(0, 2).map((rating) => (
-      <div key={rating.id} className="border-t pt-2 mt-2">
-        <div className="font-medium text-purple-400">
-          {rating.ratingCategory.name}
+            {nominee.rating && nominee.rating.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-900">
+                  Recent Ratings:
+                </h3>
+                <div className="mt-1 text-sm text-gray-600">
+                  {nominee.rating.slice(0, 3).map((rating, index) => (
+                    <span key={`${rating.id}-${index}`} className="mr-4">
+                      {rating.ratingCategory.name}: {rating.score}/5
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="text-sm text-gray-600">
-          <p>Weight: {rating.ratingCategory.weight}%</p>
-          <p>Score: {rating.score}/5</p>
-        </div>
-        <p className="text-sm mt-1 text-gray-500">
-          {rating.ratingCategory.description}
-        </p>
-        <p className="text-sm mt-1 text-black">Evidence:</p>
-        <div className="text-sm text-blue-400">
-          {rating.evidence || "None provided"}
-        </div>
-      </div>
-    ));
-  };
+      </Card>
+    </Link>
+  );
 
-  const filteredNominees = nominees.filter((nominee) =>
-    nominee.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const renderPagination = () => (
+    <div className="mt-8 flex justify-center gap-2">
+      <Button
+        variant="outline"
+        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </Button>
+      <span className="py-2">
+        Page {currentPage} of {totalPages}
+      </span>
+      <Button
+        variant="outline"
+        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </Button>
+    </div>
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {isLoading ? (
-        <div>Loading...</div>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header Section */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Officials Directory</h1>
+        <Link href="/nominate">
+          <Button className="bg-blue-600 text-white hover:bg-blue-700">
+            Nominate Official
+          </Button>
+        </Link>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="mb-6 space-y-4">
+        <Input
+          type="text"
+          placeholder="Search officials by name, position, or institution..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-xl"
+        />
+        
+        <div className="flex gap-2">
+          <Button
+            variant={sortBy === 'recent' ? 'default' : 'outline'}
+            onClick={() => setSortBy('recent')}
+          >
+            Most Recent
+          </Button>
+          <Button
+            variant={sortBy === 'rating' ? 'default' : 'outline'}
+            onClick={() => setSortBy('rating')}
+          >
+            Highest Rated
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        renderSkeletonLoader()
       ) : (
-        <>
-          <h1 className="text-3xl text-gray-600 font-bold mb-6">Nominees</h1>
-          <div className="mb-6">
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search nominees..."
-              className="w-full p-4 rounded-lg border border-gray-300 text-black"
-            />
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredNominees.map((nominee) => (
-              <Card key={nominee.id} className="p-6 relative">
-                <div className="flex flex-col items-center">
-                  <Avatar className="w-24 h-24 mb-4">
-                    <Image
-                      src={nominee.image ? nominee.image : "/npp.png"}
-                      alt={nominee.name}
-                      width={96}
-                      height={96}
-                    />
-                  </Avatar>
-                  <h2 className="text-xl text-cyan-700 font-semibold mb-2">
-                    <Link
-                      href={`/nominees/${nominee.id}`}
-                      className="hover:underline"
-                    >
-                      {nominee.name}
-                    </Link>
-                  </h2>
-                  <p className="text-gray-600 mb-4">
-                    {nominee.position.name} at {nominee.institution.name}
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-medium text-black mb-2">
-                      Recent Ratings
-                    </h3>
-                    {renderNomineeRating(nominee.rating)}
-                  </div>
-
-                  <NomineeComments nomineeId={nominee.id} />
-                </div>
-
-                <Link
-                  href={`/nominees/${nominee.id}/rate`}
-                  className="absolute top-4 right-4 bg-cyan-700 text-white py-2 px-4 rounded-md hover:bg-cyan-800 transition"
-                >
-                  Rate
-                </Link>
-              </Card>
-            ))}
-          </div>
-        </>
+        <div className="space-y-4">
+          {nominees.map(nominee => renderNomineeCard(nominee))}
+        </div>
       )}
+
+      {/* Pagination */}
+      {!loading && totalPages > 1 && renderPagination()}
     </div>
   );
-};
-
-export default NomineeList;
+}

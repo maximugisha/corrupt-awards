@@ -34,6 +34,35 @@ type FilterOptions = {
   };
 };
 
+export function buildSearchQuery(search: string, fields: string[]) {
+  if (!search) return undefined;
+
+  return {
+    OR: fields.map(field => ({
+      [field]: {
+        contains: search,
+        mode: 'insensitive' as const,
+      },
+    })),
+  };
+}
+
+export function buildStatusFilter(status: string | null) {
+  if (!status) return undefined;
+  
+  return {
+    status: status === 'active',
+  };
+}
+
+export function buildRatingSort(rating: string | null) {
+  if (!rating) return { createdAt: 'desc' as const };
+
+  return rating === 'high'
+    ? { rating: { _count: 'desc' as const } }
+    : { rating: { _count: 'asc' as const } };
+}
+
 export function buildFilters(
   query: URLSearchParams,
   options: FilterOptions

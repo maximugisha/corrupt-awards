@@ -1,16 +1,26 @@
 // src/types/interfaces.ts
 
+
+// Base interfaces for optional relationships
+
+interface BaseUser {
+    name: string;
+    image?: string;
+}
+
 export interface Rating {
     id: number;
-    userId: number;
-    nomineeId: number;
-    ratingCategoryId: number;
     score: number;
     severity: number;
     evidence: string | null;
     createdAt: string;
-    ratingCategory: RatingCategory;
-}
+    user?: BaseUser;
+    ratingCategory: {
+      name: string;
+      icon: string;
+    };
+  }
+   
 
 export interface Comment {
     id: number;
@@ -19,10 +29,7 @@ export interface Comment {
     institutionId?: number;
     content: string;
     createdAt: string;
-    user: {
-        name: string;
-        image?: string;
-    };
+    user: BaseUser;
 }
 
 export interface InstitutionRating {
@@ -57,14 +64,14 @@ export interface Position {
 }
 
 export interface Institution {
-    id: number;
-    image?: string;
-    name: string;
-    status: boolean;
-    nominees?: Nominee[];
-    rating: InstitutionRating[];
-    comments?: Comment[];
-    createdAt: string;
+  id: number;
+  image?: string;
+  name: string;
+  status: boolean;
+  nominees?: Nominee[];
+  rating: InstitutionRating[];
+  comments?: Comment[];
+  createdAt: string;
 }
 
 export interface District {
@@ -93,6 +100,7 @@ export interface Nominee {
     district: District;
 }
 
+// Response types with proper generics
 export interface BaseResponse<T> {
     count: number;
     pages: number;
