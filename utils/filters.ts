@@ -1,93 +1,66 @@
-import { Prisma } from '@prisma/client';
-
-// Define the possible field types for filtering
-type FilterValue = string | number | Date | boolean;
-type RangeValue = number | Date;
-
-// Define the structure for range comparisons
-type RangeFilter<T> = {
-  gte?: T;
-  lte?: T;
-};
-
-// Define the structure for text search conditions
-type TextSearchCondition = {
-  contains: string;
-  mode: Prisma.QueryMode;
-};
-
-// Define the complete filter structure
+// utils/filter.ts
 type FilterConditions = {
-  OR?: Array<Record<string, TextSearchCondition>>;
-  [key: string]: FilterValue | RangeFilter<RangeValue> | Array<Record<string, TextSearchCondition>> | undefined;
-};
-
-type FilterOptions = {
-  searchFields?: string[]; // Fields for text search
-  exactFields?: string[]; // Fields for exact match
-  rangeFields?: {
-    // Fields for range queries (e.g., createdAt, price)
-    [key: string]: {
-      min?: RangeValue;
-      max?: RangeValue;
+    [key: string]: any;
+  };
+  
+  type FilterOptions = {
+    searchFields?: string[]; // Fields for text search
+    exactFields?: string[];  // Fields for exact match
+    rangeFields?: {          // Fields for range queries (e.g., createdAt, price)
+      [key: string]: {
+        min?: number | Date;
+        max?: number | Date;
+      };
     };
   };
-};
-
-export function buildFilters(
-  query: URLSearchParams,
-  options: FilterOptions
-): FilterConditions {
-  const filters: FilterConditions = {};
-
-  // Text search
-  if (options.searchFields) {
-    const searchValue = query.get('search');
-    if (searchValue) {
-      filters.OR = options.searchFields.map((field) => ({
-        [field]: {
-          contains: searchValue,
-          mode: 'insensitive' as Prisma.QueryMode,
-        },
-      }));
+  
+  export function buildFilters(
+    query: URLSearchParams,
+    options: FilterOptions
+  ): FilterConditions {
+    const filters: FilterConditions = {};
+  
+    // Text search
+    if (options.searchFields) {
+      const searchValue = query.get('search');
+      if (searchValue) {
+        filters.OR = options.searchFields.map((field) => ({
+          [field]: {
+            contains: searchValue,
+            mode: 'insensitive', // Case-insensitive search
+          },
+        }));
+      }
     }
-  }
-
-  // Exact matches
-  if (options.exactFields) {
-    options.exactFields.forEach((field) => {
-      const value = query.get(field);
-      if (value) {
-        filters[field] = value;
-      }
-    });
-  }
-
-  // Range filters
-  if (options.rangeFields) {
-    Object.entries(options.rangeFields).forEach(([field, range]) => {
-      const minValue = query.get(`${field}_min`);
-      const maxValue = query.get(`${field}_max`);
-
-      if (minValue || maxValue) {
-        const rangeFilter: RangeFilter<RangeValue> = {};
-        
-        if (minValue) {
-          rangeFilter.gte = range.min instanceof Date 
-            ? new Date(minValue) 
-            : parseFloat(minValue);
+  
+    // Exact matches
+    if (options.exactFields) {
+      options.exactFields.forEach((field) => {
+        const value = query.get(field);
+        if (value) {
+          filters[field] = value;
         }
-        
-        if (maxValue) {
-          rangeFilter.lte = range.max instanceof Date 
-            ? new Date(maxValue) 
-            : parseFloat(maxValue);
+      });
+    }
+  
+    // Range filters
+    if (options.rangeFields) {
+      Object.entries(options.rangeFields).forEach(([field, range]) => {
+        const minValue = query.get(`${field}_min`);
+        const maxValue = query.get(`${field}_max`);
+  
+        if (minValue || maxValue) {
+          filters[field] = {};
+          if (minValue) {
+            filters[field].gte = range.min instanceof Date ? new Date(minValue) : parseFloat(minValue);
+          }
+          if (maxValue) {
+            filters[field].lte = range.max instanceof Date ? new Date(maxValue) : parseFloat(maxValue);
+          }
         }
-        
-        filters[field] = rangeFilter;
-      }
-    });
+      });
+    }
+  
+    return filters;
   }
-
-  return filters;
-}
+  

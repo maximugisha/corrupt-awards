@@ -1,106 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { buildFilters } from '@/utils/filters';
+import { paginate } from '@/utils/pagination';
 
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
+
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const showAll = searchParams.get('showAll') === 'true';
 
-    const where = showAll ? {} : { status: true };
+    const filters = buildFilters(searchParams, {
+        searchFields: ['name'],
+        exactFields: ['status', 'institutionId', 'positionId'],
+        rangeFields: {
+            createdAt: { min: new Date(), max: new Date() },
+        },
+    });
 
-    try {
-        const total = await prisma.nominee.count({ where });
-        const pages = Math.ceil(total / limit);
-        const skip = (page - 1) * limit;
+    // Define include to fetch related models: position, institution, and district
+    const include = {
+        rating: {
 
-        const nominees = await prisma.nominee.findMany({
-            where,
-            skip,
-            take: limit,
-            include: {
-                position: true,
-                institution: true,
-                district: true,
-                rating: {
-                    include: {
-                        ratingCategory: true
-                    }
-                }
-            },
-            orderBy: {
-                id: 'desc'
+            select: {
+                evidence: true,
+                severity: true,
+                score: true, ratingCategory: true
             }
-        });
+        },
+        position: true,
+        institution: true,
+        district: true,
+    };
 
-        return NextResponse.json({
-            data: nominees,
-            count: total,
-            pages,
-            currentPage: page
-        });
-    } catch (error) {
-        console.error('Error fetching nominees:', error);
-        return NextResponse.json({ error: 'Failed to fetch nominees' }, { status: 500 });
-    }
+    const result = await paginate(prisma.nominee, { page, limit }, filters, include);
+
+    return NextResponse.json(result);
 }
 
 export async function POST(req: NextRequest) {
     try {
-        const data = await req.json();
-        const nominee = await prisma.nominee.create({
+        const { name, positionId, institutionId, districtId, status, evidence, image } = await req.json();
+
+        const newNominee = await prisma.nominee.create({
             data: {
-                name: data.name,
-                image: data.image,
-                positionId: data.positionId,
-                institutionId: data.institutionId,
-                districtId: data.districtId,
-                status: data.status || true,
-            }
+                name,
+                positionId,
+                institutionId,
+                districtId,
+                status,
+                evidence,
+                image,
+            },
+            include: {
+                position: true,
+                institution: true,
+                district: true,
+            },
         });
-        return NextResponse.json(nominee);
+
+        return NextResponse.json(newNominee, { status: 201 });
     } catch (error) {
-        console.error('Error creating nominee:', error);
-        return NextResponse.json({ error: 'Failed to create nominee' }, { status: 500 });
+        return NextResponse.json({ error: 'Error creating nominee' + error }, { status: 500 });
     }
 }
-
-export async function PUT(req: NextRequest) {
-    try {
-        const data = await req.json();
-        const nominee = await prisma.nominee.update({
-            where: { id: data.id },
-            data: {
-                name: data.name,
-                image: data.image,
-                positionId: data.positionId,
-                institutionId: data.institutionId,
-                districtId: data.districtId,
-                status: data.status
-            }
-        });
-        return NextResponse.json(nominee);
-    } catch (error) {
-        console.error('Error updating nominee:', error);
-        return NextResponse.json({ error: 'Failed to update nominee' }, { status: 500 });
-    }
-}
-
-export async function DELETE(req: NextRequest) {
-    try {
-        const { searchParams } = new URL(req.url);
-        const id = parseInt(searchParams.get('id') || '');
-        
-        const nominee = await prisma.nominee.delete({
-            where: { id }
-        });
-        return NextResponse.json(nominee);
-    } catch (error) {
-        console.error('Error deleting nominee:', error);
-        return NextResponse.json({ error: 'Failed to delete nominee' }, { status: 500 });
-    }
-}
-
-// For activate/deactivate, use the PUT handler with a status field
