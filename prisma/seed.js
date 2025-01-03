@@ -146,16 +146,13 @@ async function main() {
     const institutionRatingCategories = await Promise.all(
         [
             {
-                keyword: "prevalence-of-bribery",
-                name: "Prevalence of Bribery",
-                icon: "💰",
-                description: "Systematic occurrence of bribery",
+                keyword: 'bribery',
+                name: 'Level of Bribery', icon: '💰',
+                description: 'Taking or soliciting bribes for services or favors',
                 weight: 5,
-                examples: [
-                    "Widespread bribe collection",
-                    "Systematic corruption",
-                    "Regular illegal payments"
-                ],
+                examples: ['Demanding payment for government services',
+                    'Accepting kickbacks from contractors',
+                    'Bribes for tender awards'],
                 impactAreas: {
                     connect: Array.from({ length: 4 }, () => ({
                         id: faker.helpers.arrayElement(impactAreas).id,
@@ -168,16 +165,13 @@ async function main() {
                 }
             },
             {
-                keyword: "extent-of-embezzlement",
-                name: "Extent of Embezzlement",
-                icon: "🏦",
-                description: "Scale of funds misappropriation",
-                weight: 5,
-                examples: [
-                    "Systemic fund diversion",
-                    "Resource misappropriation",
-                    "Financial misconduct"
-                ],
+                keyword: 'embezzlement',
+                name: 'Level of Embezzlement',
+                icon: '🏦',
+                description: 'Theft or misappropriation of public funds',
+                weight: 4, examples: ['Missing public funds',
+                    'Unauthorized use of resources',
+                    'Fraudulent claims'],
                 impactAreas: {
                     connect: Array.from({ length: 4 }, () => ({
                         id: faker.helpers.arrayElement(impactAreas).id,
@@ -188,172 +182,17 @@ async function main() {
                         id: faker.helpers.arrayElement(departments).id,
                     })),
                 }
+
             },
             {
-                keyword: "incidence-of-nepotism",
-                name: "Incidence of Nepotism",
-                icon: "👥",
-                description: "Systematic favoritism of relatives",
-                weight: 4,
-                examples: [
-                    "Family-based hiring",
-                    "Relative favoritism",
-                    "Nepotistic practices"
-                ],
-                impactAreas: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(impactAreas).id,
-                    })),
-                },
-                departments: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(departments).id,
-                    })),
-                }
-            },
-            {
-                keyword: "frequency-of-fraud",
-                name: "Frequency of Fraud",
-                icon: "🎭",
-                description: "Occurrence of fraudulent activities",
-                weight: 5,
-                examples: [
-                    "Document falsification",
-                    "False claims",
-                    "Procurement manipulation"
-                ],
-                impactAreas: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(impactAreas).id,
-                    })),
-                },
-                departments: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(departments).id,
-                    })),
-                }
-            },
-            {
-                keyword: "level-of-conflict",
-                name: "Level of Conflict of Interest",
-                icon: "⚖️",
-                description: "Extent of conflicts of interest",
-                weight: 4,
-                examples: [
-                    "Business conflicts",
-                    "Personal interests",
-                    "Decision bias"
-                ],
-                impactAreas: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(impactAreas).id,
-                    })),
-                },
-                departments: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(departments).id,
-                    })),
-                }
-            },
-            {
-                keyword: "transparency-level",
-                name: "Transparency of Operations",
-                icon: "👁️",
-                description: "Level of operational transparency",
-                weight: 4,
-                examples: [
-                    "Information access",
-                    "Process clarity",
-                    "Decision transparency"
-                ],
-                impactAreas: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(impactAreas).id,
-                    })),
-                },
-                departments: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(departments).id,
-                    })),
-                }
-            },
-            {
-                keyword: "abuse-of-authority",
-                name: "Abuse of Authority",
-                icon: "👊",
-                description: "Institutional misuse of power",
-                weight: 5,
-                examples: [
-                    "Power misuse",
-                    "Authority abuse",
-                    "Resource misappropriation"
-                ],
-                impactAreas: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(impactAreas).id,
-                    })),
-                },
-                departments: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(departments).id,
-                    })),
-                }
-            },
-            {
-                keyword: "degree-of-cronyism",
-                name: "Degree of Cronyism",
-                icon: "🤝",
-                description: "Extent of favoritism practices",
-                weight: 4,
-                examples: [
-                    "Friend favoritism",
-                    "Biased appointments",
-                    "Unfair advantages"
-                ],
-                impactAreas: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(impactAreas).id,
-                    })),
-                },
-                departments: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(departments).id,
-                    })),
-                }
-            },
-            {
-                keyword: "unexplained-wealth-officials",
-                name: "Unexplained Wealth among Officials",
-                icon: "💎",
-                description: "Officials' unexplained wealth",
-                weight: 4,
-                examples: [
-                    "Suspicious assets",
-                    "Unexplained riches",
-                    "Wealth discrepancies"
-                ],
-                impactAreas: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(impactAreas).id,
-                    })),
-                },
-                departments: {
-                    connect: Array.from({ length: 4 }, () => ({
-                        id: faker.helpers.arrayElement(departments).id,
-                    })),
-                }
-            },
-            {
-                keyword: "corruption-responsiveness",
-                name: "Responsiveness to Corruption",
-                icon: "⚡",
-                description: "Response to corruption reports",
+                keyword: 'nepotism',
+                name: 'Level of Nepotism',
+                icon: '👥',
+                description: 'Favoring relatives in appointments and contracts',
                 weight: 3,
-                examples: [
-                    "Report handling",
-                    "Investigation speed",
-                    "Action effectiveness"
-                ],
+                examples: ['Hiring family members',
+                    'Awarding contracts to relatives',
+                    'Creating positions for friends'],
                 impactAreas: {
                     connect: Array.from({ length: 4 }, () => ({
                         id: faker.helpers.arrayElement(impactAreas).id,
@@ -364,7 +203,7 @@ async function main() {
                         id: faker.helpers.arrayElement(departments).id,
                     })),
                 }
-            }
+            },
         ].map((institutioncategory) =>
             prisma.institutionRatingCategory.create({
                 data: institutioncategory,

@@ -3,9 +3,8 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import HomePage from '@/components/home/page';
 
-export default function Home() {
+export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -15,9 +14,10 @@ export default function Home() {
     }
   }, [isAuthenticated, router]);
 
+  // Show nothing while checking authentication
   if (!isAuthenticated) {
     return null;
   }
 
-  return <HomePage />;
+  return <>{children}</>;
 }

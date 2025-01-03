@@ -20,7 +20,7 @@ export interface Rating {
       icon: string;
     };
   }
-   
+
 
 export interface Comment {
     id: number;
@@ -30,6 +30,17 @@ export interface Comment {
     content: string;
     createdAt: string;
     user: BaseUser;
+}
+export interface InstitutionComment {
+  id: number;
+  userId: number;
+  institutionId: number;
+  content: string;
+  createdAt: string;
+  user: {
+    name: string;
+    avatar?: string;
+  };
 }
 
 export interface InstitutionRating {
@@ -70,8 +81,9 @@ export interface Institution {
   status: boolean;
   nominees?: Nominee[];
   rating: InstitutionRating[];
-  comments?: Comment[];
   createdAt: string;
+  comments?: InstitutionComment[];
+  avatar?: string;
 }
 
 export interface District {
@@ -99,6 +111,34 @@ export interface Nominee {
     institution: Institution;
     district: District;
 }
+
+export interface HNominee {
+  id: number;
+  name: string;
+  position: {
+    name: string;
+  };
+  institution: {
+    name: string;
+  };
+  rating: Rating[];
+}
+
+export interface HInstitution {
+  id: number;
+  name: string;
+  rating: Rating[];
+}
+
+export interface HStatistics {
+  totalInstitutions: number;
+  totalNominees: number;
+  totalInstitutionRatings: number;
+  totalNomineeRatings: number;
+  totalUsers: number;
+  totalRatings: number;
+}
+
 
 // Response types with proper generics
 export interface BaseResponse<T> {

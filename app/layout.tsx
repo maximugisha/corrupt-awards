@@ -2,6 +2,8 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Link from "next/link"
+import { AuthButton } from "@/components/auth-button"
+import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -19,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+      <AuthProvider>
         <div className="min-h-screen flex flex-col">
           {/* Navigation */}
           <nav className="bg-slate-900 text-white sticky top-0 z-50">
@@ -39,6 +42,7 @@ export default function RootLayout({
                   <Link href="/leaderboard" className="hover:text-gray-300 transition-colors">
                     Leaderboard
                   </Link>
+                  <AuthButton />
                   {/*<Link*/}
                   {/*  href="/submit"*/}
                   {/*  className="bg-white text-slate-900 px-4 py-2 rounded-md font-medium */}
@@ -166,6 +170,7 @@ export default function RootLayout({
             </div>
           </footer>
         </div>
+      </AuthProvider>
       </body>
     </html>
   )

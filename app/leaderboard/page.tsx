@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Medal } from "lucide-react";
 import Image from "next/image";
+import { AuthGuard } from '@/components/auth-guard';
 
 // Define interfaces if not already imported from @/types/interfaces
 interface Rating {
@@ -82,6 +83,7 @@ const LeaderboardPage = () => {
     avatar?: boolean;
     imageUrl?: string;
   }) => (
+
     <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
       <div className="flex items-center justify-center w-8">
         {index <= 2 ? (
@@ -133,6 +135,7 @@ const LeaderboardPage = () => {
   }
 
   return (
+    <AuthGuard>
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">
         Corruption Leaderboard
@@ -210,6 +213,7 @@ const LeaderboardPage = () => {
         </div>
       </div>
     </div>
+    </AuthGuard>
   );
 };
 
