@@ -43,10 +43,11 @@ model Nominee {
 }
 
 model Position {
-  id        Int       @id @default(autoincrement())
-  name      String
-  nominees  Nominee[]
-  createdAt DateTime  @default(now())
+    id        Int       @id @default(autoincrement())
+    name      String
+    status    Boolean   @default(true)  
+    nominees  Nominee[]
+    createdAt DateTime  @default(now())
 }
 
 model Institution {
@@ -56,9 +57,8 @@ model Institution {
   status   Boolean   @default(false)
   nominees Nominee[]
   comments Comment[]
-
-  rating    InstitutionRating[]
-  createdAt DateTime            @default(now())
+  rating   InstitutionRating[]
+  createdAt DateTime  @default(now())
 }
 
 model District {
@@ -66,6 +66,7 @@ model District {
   name      String    @unique
   region    String
   nominees  Nominee[]
+  status    Boolean   @default(true)
   createdAt DateTime  @default(now())
 }
 

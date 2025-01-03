@@ -4,21 +4,20 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
-  try {
-    // Extract the nominee ID from the URL parameter
-    const nomineeId = parseInt(req.nextUrl.pathname.split('/')[3], 10);
-
-    // Check if the nominee exists
-    const nominee = await prisma.nominee.findUnique({
-      where: { id: nomineeId },
-    });
-
-    if (!nominee) {
-      return NextResponse.json({ error: 'Nominee not found' }, { status: 404 });
-    }
-
-    // Extract ratings array from the request body
-    const { ratings } = await req.json();
+    try {
+      const body = await req.json(); // Read body once and store it
+      console.log('Received payload:', body);
+      
+      const nomineeId = parseInt(req.nextUrl.pathname.split('/')[3], 10);
+      const nominee = await prisma.nominee.findUnique({
+        where: { id: nomineeId },
+      });
+  
+      if (!nominee) {
+        return NextResponse.json({ error: 'Nominee not found' }, { status: 404 });
+      }
+  
+      const { ratings } = body; // Use stored body instead of reading again
 
     if (!Array.isArray(ratings) || ratings.length === 0) {
       return NextResponse.json({ error: 'Ratings must be an array with at least one item' }, { status: 400 });
